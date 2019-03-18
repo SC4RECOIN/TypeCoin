@@ -1,25 +1,24 @@
-const Blockchain = require('./blockchain/blockchain');
-const Transaction = require('./blockchain/transaction');
-const EC = require('elliptic').ec;
-
+import Blockchain = require('./blockchain/blockchain');
+import Transaction = require('./blockchain/transaction');
+import { ec as EC } from 'elliptic';
 
 // generate a new key pair and convert them to hex-strings
+const ec = new EC('secp256k1');
 const key = ec.genKeyPair();
-const privateKey = key.getPrivate('hex');
-const walletAddress = privateKey.getPublic('hex');
+const walletAddress = key.getPublic('hex');
 
 // chain
 const typeCoin = new Blockchain();
 
 // create transaction and mine block
 const tx1 = new Transaction(walletAddress, 'address1', 100);
-tx1.signTransaction(privateKey);
+tx1.signTransaction(key);
 typeCoin.addTransaction(tx1);
 typeCoin.minePendingTransactions(walletAddress);
 
 // create second transaction
 const tx2 = new Transaction(walletAddress, 'address2', 50);
-tx2.signTransaction(privateKey);
+tx2.signTransaction(key);
 typeCoin.addTransaction(tx2);
 typeCoin.minePendingTransactions(walletAddress);
 
