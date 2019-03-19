@@ -43,6 +43,16 @@ class Transaction {
     const publicKey = ec.keyFromPublic(this.fromAddress, 'hex');
     return publicKey.verify(this.calculateHash(), this.signature);
   }
+
+  toString(): string {
+    return JSON.stringify({
+      fromAddress: this.fromAddress,
+      toAddress: this.toAddress,
+      amount: this.amount,
+      timestamp: this.timestamp,
+      signature: this.signature
+    });
+  }
 }
 
 export = Transaction;
