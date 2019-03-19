@@ -29,10 +29,10 @@ class Block {
     return SHA256(this.previousHash + this.timestamp + JSON.stringify(this.transactions) + this.nonce).toString();
   }
 
-  calculateMerkleRoot(): string {
+  calculateMerkleRoot() {
     const leaves = this.transactions.map(t => SHA256(t.toString()).toString());
     this.merkleTree = new MerkleTree(leaves, SHA256)
-    return this.merkleTree.getRoot().toString('hex')
+    this.merkleRoot = this.merkleTree.getRoot().toString('hex')
   }
 
   getMerkleProof(transaction: Transaction): boolean {

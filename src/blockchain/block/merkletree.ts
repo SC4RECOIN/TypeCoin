@@ -100,7 +100,6 @@ class MerkleTree {
 
   verify(proof: any[], targetNode: string, root: string): boolean {
     let hash = Buffer.from(targetNode)
-
     if (!Array.isArray(proof) || !proof.length || !targetNode || !root) {
       return false
     }
@@ -116,6 +115,8 @@ class MerkleTree {
       hash = this.hashAlgorithm(Buffer.concat(buffers))
       hash = reverse(this.hashAlgorithm(hash))
     }
+    console.log('HASH: ', hash)
+    console.log('ROOT: ', Buffer.from(root))
     return Buffer.compare(hash, Buffer.from(root)) === 0
   }
 }
