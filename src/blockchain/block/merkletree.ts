@@ -1,7 +1,12 @@
-const reverse = require('buffer-reverse')
-const CryptoJS = require('crypto-js')
-const treeify = require('treeify')
+import reverse = require('buffer-reverse');
+import CryptoJS = require('crypto-js');
+import SHA256 = require('crypto-js/sha256');
 
+
+interface Proof {
+  position: string,
+  data: Buffer[]
+}
 
 class MerkleTree {
 
@@ -9,29 +14,28 @@ class MerkleTree {
   leaves: Buffer[];
   layers: Buffer[][];
 
-  constructor(leaves: string[], hashAlgorithm: Function) {
-    this.hashAlgorithm = bufferifyFn(hashAlgorithm);
-    this.leaves = leaves.map(x => Buffer.from(x));
+  constructor(leaves: string[]) {
+    // leaves will create tree base
+    this.leaves = leaves.map(x => Buffer.from(x, 'hex'));
     this.layers = [this.leaves];
 
     this.createHashes(this.leaves)
   }
 
-  createHashes(nodes) {
+  createHashes(nodes: Buffer[]) {
     while (nodes.length > 1) {
       const layerIndex = this.layers.length
       this.layers.push([])
 
+      // combine leaf pairs
       for (let i = 0; i < nodes.length - 1; i += 2) {
+        // grab next two
         const left = nodes[i]
         const right = nodes[i+1]
-        let data = null
 
-        data = Buffer.concat([reverse(left), reverse(right)])
-        let hash = this.hashAlgorithm(data)
-
-        // double hash
-        hash = reverse(this.hashAlgorithm(hash))
+        // combine and hash
+        const data = Buffer.concat([reverse(left), reverse(right)])
+        let hash = this.hash(data)
 
         this.layers[layerIndex].push(hash)
       }
@@ -43,12 +47,10 @@ class MerkleTree {
 
         // duplicate the odd ending nodes
         data = Buffer.concat([reverse(data), reverse(data)])
-        hash = this.hashAlgorithm(data)
-        hash = reverse(this.hashAlgorithm(hash))
+        hash = this.hash(data)
 
         this.layers[layerIndex].push(hash)
       }
-
       nodes = this.layers[layerIndex]
     }
   }
@@ -57,9 +59,9 @@ class MerkleTree {
     return this.layers[this.layers.length-1][0] || Buffer.from([])
   }
 
-  getProof(leaf: string): object[] {
+  getProof(leaf: string): Proof[] {
     const proof = [];
-    const leafBuff = Buffer.from(leaf);
+    const leafBuff = Buffer.from(leaf, 'hex')
 
     // find index of leaf
     let index = -1
@@ -70,6 +72,7 @@ class MerkleTree {
       }
     }
 
+    // leaf does not exist
     if (index === -1) {
       return []
     }
@@ -81,55 +84,50 @@ class MerkleTree {
 
     // proof generation
     for (let i = 0; i < this.layers.length - 1; i++) {
+      // find pair at each layer
       const layer = this.layers[i]
-      const isRightNode = index % 2
-      const pairIndex = (isRightNode ? index - 1: index + shift)
+      const isOdd = index % 2
+      const pairIndex = isOdd ? index-1 : index+shift
 
       if (pairIndex < layer.length) {
         proof.push({
-          position: isRightNode ? 'left': 'right',
+          position: isOdd ? 'left': 'right',
           data: layer[pairIndex]
         })
       }
 
       // set index to parent index
-      index = (index / 2) | 0
+      index = (index/2) | 0
     }
     return proof
   }
 
-  verify(proof: any[], targetNode: string, root: string): boolean {
-    let hash = Buffer.from(targetNode)
-    if (!Array.isArray(proof) || !proof.length || !targetNode || !root) {
+  verify(proof: Proof[], targetNode: string, root: string): boolean {
+    let hash = Buffer.from(targetNode, 'hex')
+    const rootBuff = Buffer.from(root, 'hex')
+
+    if (!Array.isArray(proof) || !proof.length || !targetNode || !rootBuff) {
       return false
     }
 
+    // find merkle root based on proof
     for (let i = 0; i < proof.length; i++) {
       const node = proof[i]
-      const isLeftNode = (node.position === 'left')
+      const isLeftNode = node.position === 'left'
       const buffers = []
 
       buffers.push(reverse(hash))
       buffers[isLeftNode ? 'unshift' : 'push'](reverse(node.data))
 
-      hash = this.hashAlgorithm(Buffer.concat(buffers))
-      hash = reverse(this.hashAlgorithm(hash))
+      hash = this.hash(Buffer.concat(buffers))
     }
-    console.log('HASH: ', hash)
-    console.log('ROOT: ', Buffer.from(root))
-    return Buffer.compare(hash, Buffer.from(root)) === 0
+
+    // check if the generated hash matches the root
+    return Buffer.compare(hash, rootBuff) === 0
   }
-}
 
-function bufferifyFn (f) {
-  return function (x) {
-    const v = f(x)
-    if (Buffer.isBuffer(v)) {
-      return v
-    }
-
-    // crypto-js support
-    return Buffer.from(f(CryptoJS.enc.Hex.parse(x.toString('hex'))).toString(CryptoJS.enc.Hex), 'hex')
+  hash(x): Buffer {
+    return Buffer.from(SHA256(CryptoJS.enc.Hex.parse(x.toString('hex'))).toString(CryptoJS.enc.Hex), 'hex')
   }
 }
 
