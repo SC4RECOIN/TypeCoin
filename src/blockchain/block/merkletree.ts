@@ -1,6 +1,5 @@
 import reverse = require('buffer-reverse');
 import CryptoJS = require('crypto-js');
-import SHA256 = require('crypto-js/sha256');
 
 
 interface Proof {
@@ -127,7 +126,7 @@ class MerkleTree {
   }
 
   hash(x): Buffer {
-    return Buffer.from(SHA256(CryptoJS.enc.Hex.parse(x.toString('hex'))).toString(CryptoJS.enc.Hex), 'hex')
+    return Buffer.from(CryptoJS.SHA256(CryptoJS.enc.Hex.parse(x.toString('hex'))).toString(CryptoJS.enc.Hex), 'hex')
   }
 }
 
