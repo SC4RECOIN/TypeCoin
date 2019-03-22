@@ -5,7 +5,7 @@ import { expect } from 'chai';
 import 'mocha';
 
 
-describe('ChainTest', function() {
+describe('Chain Tests', function() {
 
     // generate a new key pair and convert them to hex-strings
     const ec = new EC('secp256k1');
@@ -29,11 +29,21 @@ describe('ChainTest', function() {
       expect(result).equal(true);
     });
 
+    it('Transaction does not exists', function() {
+      const txNotAdded = new Transaction(walletAddress, 'address1', 100);
+      let result = block.getMerkleProof(txNotAdded);
+      expect(result).equal(false);
+    });
+
     // create second transaction
     const tx2 = new Transaction(walletAddress, 'address2', 50);
     tx2.signTransaction(key);
     typeCoin.addTransaction(tx2);
     typeCoin.minePendingTransactions(walletAddress);
+
+    it('Chain length', function() {
+      expect(typeCoin.chain.length).equal(3);
+    });
   
     it('Wallet balance', function() {
       let result = typeCoin.getBalanceOfAddress(walletAddress);
