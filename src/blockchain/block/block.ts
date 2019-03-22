@@ -5,6 +5,7 @@ import MerkleTree = require('./merkletree')
 
 class Block {
 
+  index: number;
   previousHash: string;
   merkleRoot: string;
   merkleTree: MerkleTree;

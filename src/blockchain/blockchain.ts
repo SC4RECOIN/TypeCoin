@@ -23,6 +23,14 @@ class Blockchain {
     return this.chain[this.chain.length - 1];
   }
 
+  getChain(): Block[] {
+    return this.chain;
+  }
+
+  replaceChain(replacement: Block[]): void {
+    this.chain = replacement;
+  }
+
   minePendingTransactions(miningRewardAddress: string) {
     const rewardTx = new Transaction(null, miningRewardAddress, this.miningReward);
     this.pendingTransactions.push(rewardTx);
