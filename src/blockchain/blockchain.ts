@@ -8,8 +8,8 @@ class Blockchain {
   pendingTransactions: Transaction[];
   miningReward: number;
 
-  constructor() {
-    this.chain = [this.createGenesisBlock()];
+  constructor(blocks?: Block[]) {
+    this.chain = blocks || [this.createGenesisBlock()];
     this.difficulty = 2;
     this.pendingTransactions = [];
     this.miningReward = 100;
@@ -27,8 +27,21 @@ class Blockchain {
     return this.chain;
   }
 
-  replaceChain(replacement: Block[]): void {
-    this.chain = replacement;
+  replaceChain(replacement: Block[]): boolean {
+    let replaceChain = new Blockchain(replacement);
+    if (replaceChain.isChainValid) {
+      this.chain = replacement;
+      return true;
+    }
+    return false;
+  }
+
+  addBlock(newBlock: Block): boolean {
+    if (newBlock.hasValidTransactions) {
+      this.chain.push(newBlock);
+      return true;
+    }
+    return false;
   }
 
   minePendingTransactions(miningRewardAddress: string) {
