@@ -4,5 +4,5 @@ import { initHttpServer } from './network/node';
 
 
 const typeCoin = new Blockchain();
-const p2p = new p2pServer(5000, typeCoin);
+const p2p = new p2pServer(5050, typeCoin);
 initHttpServer(5000, typeCoin, null);

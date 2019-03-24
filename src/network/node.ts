@@ -60,9 +60,11 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer) => 
         res.send();
     });
 
-    app.listen(httpPort, () => {
+    let server = app.listen(httpPort, () => {
         console.log('Listening http on port: ' + httpPort);
     });
+
+    return server;
 }
 
 export { initHttpServer };
