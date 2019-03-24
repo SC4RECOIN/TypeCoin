@@ -44,7 +44,7 @@ class Blockchain {
     return false;
   }
 
-  minePendingTransactions(miningRewardAddress: string) {
+  minePendingTransactions(miningRewardAddress: string): Block {
     const rewardTx = new Transaction(null, miningRewardAddress, this.miningReward);
     this.pendingTransactions.push(rewardTx);
 
@@ -55,6 +55,7 @@ class Blockchain {
     this.chain.push(block);
 
     this.pendingTransactions = [];
+    return block;
   }
 
   addTransaction(transaction: Transaction) {

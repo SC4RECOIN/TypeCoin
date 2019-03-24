@@ -59,6 +59,18 @@ class Block {
     }
     return true;
   }
+
+  toString(): string {
+    return JSON.stringify({
+      index: this.index,
+      hash: this.hash,
+      previousHash: this.previousHash,
+      merkleRoot: this.merkleRoot,
+      timestamp: this.timestamp,
+      transactions: this.transactions,
+      nonce: this.nonce
+    }, null, 2);
+  }
 }
 
 export = Block;

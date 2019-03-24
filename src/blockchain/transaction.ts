@@ -21,14 +21,16 @@ class Transaction {
     return SHA256(this.fromAddress + this.toAddress + this.amount + this.timestamp).toString();
   }
 
-  signTransaction(signingKey: EC.KeyPair) {
+  signTransaction(signingKey: EC.KeyPair): boolean {
     if (signingKey.getPublic('hex') !== this.fromAddress) {
-      throw new Error('You cannot sign transactions for other wallets!');
+      console.log('You cannot sign transactions for other wallets!')
+      return false;
     }
     
     const hashTx = this.calculateHash();
     const sig = signingKey.sign(hashTx, 'base64');
     this.signature = sig.toDER('hex');
+    return true;
   }
 
   isValid(): boolean {
@@ -36,7 +38,8 @@ class Transaction {
     if (this.fromAddress === null) return true;
 
     if (!this.signature) {
-      throw new Error('No signature in this transaction');
+      console.log('No signature in this transaction');
+      return false;
     }
 
     const ec = new EC('secp256k1');
@@ -51,7 +54,7 @@ class Transaction {
       amount: this.amount,
       timestamp: this.timestamp,
       signature: this.signature
-    });
+    }, null, 2);
   }
 }
 
