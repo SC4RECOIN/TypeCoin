@@ -2,18 +2,8 @@ import * as WebSocket from 'ws';
 import {Server} from 'ws';
 import Block = require('../blockchain/block/block');
 import Blockchain = require('../blockchain/blockchain');
+import { MessageType, Message } from '../types/message'
 
-
-enum MessageType {
-  GET_LATEST = 0,
-  GET_ALL = 1,
-  RESPONSE = 2,
-}
-
-interface Message {
-  type: MessageType;
-  data: any;
-}
 
 class p2pServer {
 
@@ -61,7 +51,7 @@ class p2pServer {
   initMessageHandler(ws: WebSocket): void {
     ws.on('message', (data: string) => {
       const message: Message = JSON.parse(data);
-      console.log('Received message' + JSON.stringify(message));
+      console.log('Received message');
 
       // return latest block
       if (message.type == MessageType.GET_LATEST) {

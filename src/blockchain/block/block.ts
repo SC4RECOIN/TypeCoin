@@ -14,9 +14,10 @@ class Block {
   nonce: number;
   hash: string;
 
-  constructor(timestamp: number, transactions: Transaction[], previousHash: string = '') {
+  constructor(timestamp: number, transactions: Transaction[], previousHash: string = '', index: number) {
     this.previousHash = previousHash;
     this.timestamp = timestamp;
+    this.index = index;
     this.transactions = transactions;
     this.nonce = 0;
     this.hash = this.calculateHash();
