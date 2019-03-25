@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "setup": "npm install",
+    "build": "tsc",
     "test": "mocha -r ts-node/register tests/**/*.test.ts"
   },
   "author": "Kurtis Streutker",
