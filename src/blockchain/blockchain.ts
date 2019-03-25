@@ -8,32 +8,54 @@ class Blockchain {
   pendingTransactions: Transaction[];
   miningReward: number;
 
-  constructor() {
-    this.chain = [this.createGenesisBlock()];
+  constructor(blocks?: Block[]) {
+    this.chain = blocks || [this.createGenesisBlock()];
     this.difficulty = 2;
     this.pendingTransactions = [];
     this.miningReward = 100;
   }
 
   createGenesisBlock(): Block {
-    return new Block(Date.parse('2017-01-01'), [], '0');
+    return new Block(Date.parse('2017-01-01'), [], '0', 1);
   }
 
   getLatestBlock(): Block {
     return this.chain[this.chain.length - 1];
   }
 
-  minePendingTransactions(miningRewardAddress: string) {
+  getChain(): Block[] {
+    return this.chain;
+  }
+
+  replaceChain(replacement: Block[]): boolean {
+    let replaceChain = new Blockchain(replacement);
+    if (replaceChain.isChainValid) {
+      this.chain = replacement;
+      return true;
+    }
+    return false;
+  }
+
+  addBlock(newBlock: Block): boolean {
+    if (newBlock.hasValidTransactions) {
+      this.chain.push(newBlock);
+      return true;
+    }
+    return false;
+  }
+
+  minePendingTransactions(miningRewardAddress: string): Block {
     const rewardTx = new Transaction(null, miningRewardAddress, this.miningReward);
     this.pendingTransactions.push(rewardTx);
 
-    let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
+    let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash, this.chain.length + 1);
     block.mineBlock(this.difficulty);
 
     console.log('Block successfully mined!');
     this.chain.push(block);
 
     this.pendingTransactions = [];
+    return block;
   }
 
   addTransaction(transaction: Transaction) {

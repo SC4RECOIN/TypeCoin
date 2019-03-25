@@ -5,6 +5,7 @@ import MerkleTree = require('./merkletree')
 
 class Block {
 
+  index: number;
   previousHash: string;
   merkleRoot: string;
   merkleTree: MerkleTree;
@@ -13,9 +14,10 @@ class Block {
   nonce: number;
   hash: string;
 
-  constructor(timestamp: number, transactions: Transaction[], previousHash: string = '') {
+  constructor(timestamp: number, transactions: Transaction[], previousHash: string = '', index: number) {
     this.previousHash = previousHash;
     this.timestamp = timestamp;
+    this.index = index;
     this.transactions = transactions;
     this.nonce = 0;
     this.hash = this.calculateHash();
@@ -57,6 +59,18 @@ class Block {
       }
     }
     return true;
+  }
+
+  toString(): string {
+    return JSON.stringify({
+      index: this.index,
+      hash: this.hash,
+      previousHash: this.previousHash,
+      merkleRoot: this.merkleRoot,
+      timestamp: this.timestamp,
+      transactions: this.transactions,
+      nonce: this.nonce
+    }, null, 2);
   }
 }
 
