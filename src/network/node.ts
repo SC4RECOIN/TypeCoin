@@ -34,7 +34,7 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer) => 
 
         if (transaction.isValid()) {
             chain.addTransaction(transaction);
-            res.send("Transaction added");
+            res.send(JSON.stringify({message: "Transaction added"}));
         } else {
             res.send("Invalid transaction")
         }

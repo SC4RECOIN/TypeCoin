@@ -29,11 +29,11 @@ describe('Network Tests', function() {
 
     await fetch("http://localhost:" + port + "/transaction", {
       method: "POST",
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(transactionMsg)
     }).then(response => response.json())
-      .then(response => { 
-        console.log(`Reponse: ${response}`)
-        expect(response).equal("Transaction added");
+      .then(data => { 
+        expect(data.message).equal("Transaction added");
       })
       .catch(error => assert.fail("Transaction added", "Error sending transaction", error))
   });
