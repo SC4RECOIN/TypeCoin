@@ -25,7 +25,6 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer) => 
     app.post('/transaction', (req, res) => {
         // create transaction
         const transaction = new Transaction(req.body.fromAddress, req.body.toAddress, req.body.amount)
-        console.log(`New transaction: ${transaction}`)
 
         // signature
         const ec = new EC('secp256k1');
@@ -43,10 +42,13 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer) => 
     app.post('/mine', (req, res) => {
         console.log(`Mining next block (reward: ${req.body.rewardAddress})`)
         const newBlock = chain.minePendingTransactions(req.body.rewardAddress);
-        res.send(newBlock);
+        res.send(JSON.stringify({
+            message: "Block successfully mined",
+            statusCode: 200
+        }));
     });
 
-    app.get('/balance', (req, res) => {
+    app.post('/balance', (req, res) => {
         console.log(`Getting address balance [${req.body.address}]`)
         res.send(JSON.stringify({balance: chain.getBalanceOfAddress(req.body.address)}, null, 2));
     });

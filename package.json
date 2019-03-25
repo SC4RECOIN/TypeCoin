@@ -7,10 +7,12 @@
   },
   "author": "Kurtis Streutker",
   "devDependencies": {
+    "@types/chai": "^4.1.7",
     "@types/crypto-js": "^3.1.43",
     "@types/elliptic": "^6.4.5",
     "@types/mocha": "^5.2.6",
     "@types/node": "^11.11.4",
+    "@types/node-fetch": "^2.1.7",
     "@types/ws": "^6.0.1",
     "chai": "^4.2.0",
     "mocha": "^6.0.2",

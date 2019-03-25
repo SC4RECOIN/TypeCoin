@@ -1,42 +1,82 @@
 import Blockchain = require('./../src/blockchain/blockchain');
-import Transaction = require('./../src/blockchain/transaction');
 import { initHttpServer } from './../src/network/node';
-const fetch = require('node-fetch')
+import fetch from 'node-fetch';
 import { ec as EC } from 'elliptic';
 import { expect, assert } from 'chai';
 import 'mocha';
 
 
 describe('Network Tests', function() {
-
   const port: number = 3005
-  const typeCoin = new Blockchain();
-  let server = initHttpServer(port, typeCoin, null);
+  let server;
+  before(function() {
+    const typeCoin = new Blockchain();
+    server = initHttpServer(port, typeCoin, null);
+  });
+
+  // close server after tests
+  after(function() {
+    server.close();
+  });
 
   // generate a new key pair and convert them to hex-strings
   const ec = new EC('secp256k1');
-  const key = ec.genKeyPair();
-  const walletAddress = key.getPublic('hex');
+  const keySet1 = ec.genKeyPair();
+  const keySet2 = ec.genKeyPair();
 
-  it('Sending transaction', async () => {
+  it('Sending transaction', async function () {
     console.log("Adding transaction")
     const transactionMsg = {
-      fromAddress: "04cd5914b1117f6da8bff002a32056633c1ecdf2287e13b47dee94aaa7dbd2fe3c5cd215bb3421f09d88efa13fc796339c2476e3da094f8e97d6c00dd24f46830e",
-      toAddress: "05aa6414b1337e3da8bff003a32056633c1ecdf2287e13b47dee94aaa7dbd2fe3c5cd215bb3421f09d88efa13fc796339c2476e3da094f8e97d6c00dd24f46830e",
-      privateKey: "cd357477ae0c20c5e16e8366949a1c0988d98d68ee7dc8f1f3ee084f991c9c1e",
+      fromAddress: keySet1.getPublic('hex'),
+      toAddress: keySet2.getPublic('hex'),
+      privateKey: keySet1.getPrivate('hex'),
       amount: 10.0
     }
 
-    await fetch("http://localhost:" + port + "/transaction", {
-      method: "POST",
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(transactionMsg)
-    }).then(response => response.json())
-      .then(data => { 
-        expect(data.message).equal("Transaction added");
-      })
-      .catch(error => assert.fail("Transaction added", "Error sending transaction", error))
+    try {
+      // add transaction to chain
+      const response = await fetch("http://localhost:" + port + "/transaction", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(transactionMsg)
+      });
+      const data = await response.json();
+      expect(data.message).equal("Transaction added");
+    }
+    catch (error) {
+      return assert.fail(`Transaction request failed: ${error}`);
+    }
   });
 
-  // server.close();
+  // mine block with transaction that was just added
+  it('Mining', async function () {
+    try {
+      const response = await fetch("http://localhost:" + port + "/mine", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rewardAddress: keySet1.getPublic('hex') })
+      });
+      const data = await response.json();
+      expect(data.statusCode).equal(200);
+    }
+    catch (error) {
+      return assert.fail(`Mining request failed: ${error}`);
+    }
+  });
+
+  // check the address balance after transaction
+  it('Address balance', async function () {
+    try {
+      const response = await fetch("http://localhost:" + port + "/balance", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: keySet1.getPublic('hex') })
+      });
+      const data = await response.json();
+      expect(data.balance).equal(90);
+    }
+    catch (error) {
+      return assert.fail(`Balance request failed: ${error}`);
+    }
+  });
 });
