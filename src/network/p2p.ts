@@ -9,13 +9,14 @@ class p2pServer {
 
   chain: Blockchain;
   sockets: WebSocket[];
+  server: Server;
 
   constructor(port: number, chain: Blockchain) {
     this.sockets = [];
     this.chain = chain;
     
-    const server: Server = new WebSocket.Server({port: port});
-    server.on('connection', (ws: WebSocket) => {
+    this.server = new WebSocket.Server({port: port});
+    this.server.on('connection', (ws: WebSocket) => {
       this.initConnection(ws);
     });
     console.log('Websocket listening on port ' + port);
