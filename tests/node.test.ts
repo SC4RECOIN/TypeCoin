@@ -48,7 +48,7 @@ describe('Network Tests', function() {
       expect(data.message).equal("Transaction added");
     }
     catch (error) {
-      return assert.fail(`Transaction request failed: ${error}`);
+      assert.fail(`Transaction request failed: ${error}`);
     }
   });
 
@@ -64,7 +64,7 @@ describe('Network Tests', function() {
       expect(data.statusCode).equal(200);
     }
     catch (error) {
-      return assert.fail(`Mining request failed: ${error}`);
+      assert.fail(`Mining request failed: ${error}`);
     }
   });
 
@@ -80,7 +80,7 @@ describe('Network Tests', function() {
       expect(data.balance).equal(90);
     }
     catch (error) {
-      return assert.fail(`Balance request failed: ${error}`);
+      assert.fail(`Balance request failed: ${error}`);
     }
   });
 });

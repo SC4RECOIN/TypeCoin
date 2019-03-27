@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser')
 import Blockchain = require('../blockchain/blockchain');
+import Block = require('../blockchain/block/block');
 import Transaction = require('../blockchain/transaction');
 import { ec as EC } from 'elliptic';
 import p2pServer = require('./p2p');
@@ -42,12 +43,12 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer) => 
 
     app.post('/mine', (req, res) => {
         console.log(`Mining next block (reward: ${req.body.rewardAddress})`)
-        const newBlock = chain.minePendingTransactions(req.body.rewardAddress);
+        const newBlock: Block = chain.minePendingTransactions(req.body.rewardAddress);
 
         // send chain to peers
         p2p.broadcast({
-            'type': MessageType.RESPONSE, 
-            'data': JSON.stringify(chain.getChain())
+            'type': MessageType.NEW_BLOCK, 
+            'data': newBlock.toString()
         });
         
         res.send(JSON.stringify({

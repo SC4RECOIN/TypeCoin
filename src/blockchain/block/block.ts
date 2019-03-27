@@ -14,12 +14,12 @@ class Block {
   nonce: number;
   hash: string;
 
-  constructor(timestamp: number, transactions: Transaction[], previousHash: string = '', index: number) {
+  constructor(timestamp: number, transactions: Transaction[], previousHash: string = '', index: number=0, nonce: number=0) {
     this.previousHash = previousHash;
     this.timestamp = timestamp;
     this.index = index;
     this.transactions = transactions;
-    this.nonce = 0;
+    this.nonce = nonce;
     this.hash = this.calculateHash();
     
     // need block transactions to construct

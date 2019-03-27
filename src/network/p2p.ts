@@ -52,7 +52,7 @@ class p2pServer {
   initMessageHandler(ws: WebSocket): void {
     ws.on('message', (data: string) => {
       const message: Message = JSON.parse(data);
-      console.log('Received message');
+      console.log(`Received message ${message.type}`);
 
       // return latest block
       if (message.type == MessageType.GET_LATEST) {
@@ -72,6 +72,15 @@ class p2pServer {
         ws.send(JSON.stringify(message));
       }
 
+      // latest block mined
+      if (message.type == MessageType.NEW_BLOCK) {
+        const blockData = JSON.parse(message.data);
+        let receivedBlock = new Block(blockData.timestamp, blockData.transactions, blockData.previousHash, blockData.index, blockData.nonce);
+        if (!this.chain.addBlock(receivedBlock)) {
+          console.log('Block received invalid');
+        }
+      }
+
       // receiving blocks
       if (message.type == MessageType.RESPONSE) {
         const receivedBlocks: Block[] = JSON.parse(message.data);
@@ -89,6 +98,7 @@ class p2pServer {
 
       // behind by one block
       if (thisLatest.hash === otherLatest.previousHash) {
+        console.log('Behind by one block')
         if (this.chain.addBlock(otherLatest)) {
           const message = {
             'type': MessageType.RESPONSE,
@@ -96,6 +106,8 @@ class p2pServer {
           }
           // broadcast this latest block
           this.broadcast(message);
+        } else {
+          console.log('Received block not valid')
         }
       } else if (receivedBlocks.length === 1) {
         console.log('Query the chain from peer');

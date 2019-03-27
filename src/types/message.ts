@@ -1,7 +1,8 @@
 enum MessageType {
   GET_LATEST = 0,
   GET_ALL = 1,
-  RESPONSE = 2,
+  NEW_BLOCK = 2,
+  RESPONSE = 3,
 }
   
 interface Message {
