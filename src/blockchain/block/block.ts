@@ -49,7 +49,6 @@ class Block {
       this.hash = this.calculateHash();
     }
     this.calculateMerkleRoot();
-    console.log(`Block mined: ${this.hash}`);
   }
 
   hasValidTransactions(): boolean {

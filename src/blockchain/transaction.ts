@@ -23,7 +23,6 @@ class Transaction {
 
   signTransaction(signingKey: EC.KeyPair): boolean {
     if (signingKey.getPublic('hex') !== this.fromAddress) {
-      console.log('You cannot sign transactions for other wallets!')
       return false;
     }
     
@@ -38,7 +37,6 @@ class Transaction {
     if (this.fromAddress === null) return true;
 
     if (!this.signature) {
-      console.log('No signature in this transaction');
       return false;
     }
 

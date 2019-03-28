@@ -24,6 +24,10 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer) => 
         res.send(chain.getLatestBlock().toString());
     })
 
+    app.get('/length', (req, res) => {
+        res.send(JSON.stringify({length: chain.chain.length}));
+    })
+
     app.post('/transaction', (req, res) => {
         // create transaction
         const transaction = new Transaction(req.body.fromAddress, req.body.toAddress, req.body.amount)
@@ -42,7 +46,6 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer) => 
     });
 
     app.post('/mine', (req, res) => {
-        console.log(`Mining next block (reward: ${req.body.rewardAddress})`)
         const newBlock: Block = chain.minePendingTransactions(req.body.rewardAddress);
 
         // send chain to peers
@@ -58,7 +61,6 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer) => 
     });
 
     app.post('/balance', (req, res) => {
-        console.log(`Getting address balance [${req.body.address}]`)
         res.send(JSON.stringify({balance: chain.getBalanceOfAddress(req.body.address)}, null, 2));
     });
 
@@ -68,7 +70,7 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer) => 
 
     app.post('/peer', (req, res) => {
         p2p.connectToPeers(req.body.peer);
-        res.send();
+        res.send(JSON.stringify({message: "Peer added"}));
     });
 
     let server = app.listen(httpPort, () => {

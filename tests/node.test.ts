@@ -29,7 +29,6 @@ describe('Network Tests', function() {
   const keySet2 = ec.genKeyPair();
 
   it('Sending transaction', async function () {
-    console.log("Adding transaction")
     const transactionMsg = {
       fromAddress: keySet1.getPublic('hex'),
       toAddress: keySet2.getPublic('hex'),
