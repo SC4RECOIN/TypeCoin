@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser')
 import Blockchain = require('../blockchain/blockchain');
 import Block = require('../blockchain/block/block');
-import Transaction = require('../blockchain/transaction');
+import Transaction = require('../blockchain/transactionold');
 import { ec as EC } from 'elliptic';
 import p2pServer = require('./p2p');
 import { MessageType } from '../types/message'

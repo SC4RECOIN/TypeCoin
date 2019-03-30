@@ -1,5 +1,5 @@
 import SHA256 = require('crypto-js/sha256');
-import Transaction = require('./../transaction');
+import Transaction = require('../transactionold');
 import MerkleTree = require('./merkletree')
 
 

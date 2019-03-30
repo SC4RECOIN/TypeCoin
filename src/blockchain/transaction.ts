@@ -1,59 +1,39 @@
-import SHA256 = require('crypto-js/sha256');
 import { ec as EC } from 'elliptic';
-
+import SHA256 = require('crypto-js/sha256');
+import { TxIn, TxOut } from './../types/transaction';
 
 class Transaction {
-  
-  fromAddress: string;
-  toAddress: string;
-  amount: number;
-  timestamp: number;
-  signature: EC.Signature;
+  id: string;
+  txIns: TxIn[];
+  txOuts: TxOut[];
+  signature: string;
 
-  constructor(fromAddress: string, toAddress: string, amount: number) {
-    this.fromAddress = fromAddress;
-    this.toAddress = toAddress;
-    this.amount = amount;
-    this.timestamp = Date.now();
+  constructor(txIns: TxIn[], txOuts: TxOut[], signingKey: EC.KeyPair) {
+    this.txOuts = txOuts;
+
+    this.id = this.getTransactionId();
+    this.signature = signingKey.sign(this.id).toDER('hex');
+
+    // add signature to all txIns
+    this.txIns = txIns.map((txIn) => {
+      txIn.signature = this.signature;
+      return txIn;
+    });
   }
 
-  calculateHash(): string {
-    return SHA256(this.fromAddress + this.toAddress + this.amount + this.timestamp).toString();
+  getTransactionId(): string {
+    // gather ids and indexes
+    const txInContent = this.txIns
+      .map((txIn) => txIn.txOutId + txIn.txOutIndex)
+      .reduce((a, b) => a + b, '');
+
+    const txOutContent = this.txOuts
+      .map((txOut) => txOut.address + txOut.amount)
+      .reduce((a, b) => a + b, '');
+
+    // hash the content of the inputs and outputs to create id
+    return SHA256(txInContent + txOutContent).toString();
   }
+} 
 
-  signTransaction(signingKey: EC.KeyPair): boolean {
-    if (signingKey.getPublic('hex') !== this.fromAddress) {
-      return false;
-    }
-    
-    const hashTx = this.calculateHash();
-    const sig = signingKey.sign(hashTx, 'base64');
-    this.signature = sig.toDER('hex');
-    return true;
-  }
-
-  isValid(): boolean {
-    // from mining reward
-    if (this.fromAddress === null) return true;
-
-    if (!this.signature) {
-      return false;
-    }
-
-    const ec = new EC('secp256k1');
-    const publicKey = ec.keyFromPublic(this.fromAddress, 'hex');
-    return publicKey.verify(this.calculateHash(), this.signature);
-  }
-
-  toString(): string {
-    return JSON.stringify({
-      fromAddress: this.fromAddress,
-      toAddress: this.toAddress,
-      amount: this.amount,
-      timestamp: this.timestamp,
-      signature: this.signature
-    }, null, 2);
-  }
-}
-
-export = Transaction;
+export = Transaction

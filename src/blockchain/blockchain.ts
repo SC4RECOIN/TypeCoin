@@ -1,5 +1,5 @@
 import Block = require('./block/block');
-import Transaction = require('./transaction');
+import Transaction = require('./transactionold');
 
 class Blockchain {
 
