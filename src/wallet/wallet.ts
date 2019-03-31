@@ -1,7 +1,6 @@
 import { TxIn, TxOut, UnspentTxOut } from './../types/transaction';
-import Transaction = require('./../blockchain/transaction');
+import Transaction = require('../blockchain/transaction/transaction');
 import { ec as EC } from 'elliptic';
-import SHA256 = require('crypto-js/sha256');
 
 
 class Wallet {
@@ -18,11 +17,9 @@ class Wallet {
     this.balance = 0;
   }
 
-  updateUTxOuts(uTxOuts: UnspentTxOut[], txPool: Transaction[]) {
+  updateUTxOuts(uTxOuts: UnspentTxOut[]) {
     // find unspent outputs associated with address
     this.uTxOuts = uTxOuts.filter((uTxO: UnspentTxOut) => uTxO.address === this.address);
-
-    // TODO: filter out trasaction outputs that are in the tx pool
   }
 
   updateWalletBalance() {
@@ -32,8 +29,8 @@ class Wallet {
     }
   }
 
-  createTransaction = (toAddress: string, amount: number, uTxOuts: UnspentTxOut[], txPool: Transaction[]): Transaction => {
-    this.updateUTxOuts(uTxOuts, txPool);
+  createTransaction = (toAddress: string, amount: number, uTxOuts: UnspentTxOut[]): Transaction => {
+    this.updateUTxOuts(uTxOuts);
     this.updateWalletBalance();
 
     if (this.balance < amount) {
@@ -42,7 +39,7 @@ class Wallet {
 
     let found = 0;
     let leftover;
-    const txOutsToUse = [];
+    const txOutsToUse: UnspentTxOut[] = [];
 
     // loop over outputs until enough is found
     for (const uTxOut of this.uTxOuts) {
@@ -72,7 +69,17 @@ class Wallet {
       txOuts.push({address: this.address, amount: leftover})
     }
     
-    return new Transaction(txIns, txOuts, this.keyPair);
+    // create tx and update uTxOuts
+    const tx = new Transaction(txIns, txOuts, this.keyPair);
+    this.uTxOuts = this.uTxOuts.filter((uTxO: UnspentTxOut) => {
+      txOutsToUse.forEach((txUsed: UnspentTxOut) => {
+        if (txUsed.txOutId === uTxO.txOutId) 
+          return false;
+      })
+      return true;
+    });
+
+    return tx;
   };
 }
 

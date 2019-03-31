@@ -1,6 +1,6 @@
 import { ec as EC } from 'elliptic';
 import SHA256 = require('crypto-js/sha256');
-import { TxIn, TxOut } from './../types/transaction';
+import { TxIn, TxOut } from '../../types/transaction';
 
 class Transaction {
   id: string;
@@ -33,6 +33,10 @@ class Transaction {
 
     // hash the content of the inputs and outputs to create id
     return SHA256(txInContent + txOutContent).toString();
+  }
+
+  isValid(): boolean {
+    return true;
   }
 } 
 
