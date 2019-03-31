@@ -83,3 +83,4 @@ class Wallet {
   };
 }
 
+export = Wallet;

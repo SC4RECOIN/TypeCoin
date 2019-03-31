@@ -28,6 +28,10 @@ class TransactionPool {
     }
     this.pool.push(tx);
   }
+
+  clearTxPool(): void {
+    this.pool = [];
+  }
 }
 
 export = TransactionPool;

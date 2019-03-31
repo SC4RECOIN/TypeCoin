@@ -8,17 +8,31 @@ class Transaction {
   txOuts: TxOut[];
   signature: string;
 
-  constructor(txIns: TxIn[], txOuts: TxOut[], signingKey: EC.KeyPair) {
+  constructor(txIns: TxIn[], txOuts: TxOut[], signingKey?: EC.KeyPair) {
     this.txOuts = txOuts;
 
     this.id = this.getTransactionId();
-    this.signature = signingKey.sign(this.id).toDER('hex');
+    this.signature = signingKey != null ? signingKey.sign(this.id).toDER('hex') : '';
 
     // add signature to all txIns
     this.txIns = txIns.map((txIn) => {
       txIn.signature = this.signature;
       return txIn;
     });
+  }
+
+  static createCoinbaseTx(address: string, blockIndex: number, amount: number): Transaction {
+    const txIn = {
+      txOutId: '',
+      txOutIndex: blockIndex
+    }
+
+    const txOut = {
+      address: address,
+      amount: amount
+    }
+
+    return new Transaction([txIn], [txOut]);
   }
 
   getTransactionId(): string {

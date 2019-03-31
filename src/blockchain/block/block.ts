@@ -1,5 +1,6 @@
 import SHA256 = require('crypto-js/sha256');
-import MerkleTree = require('./merkletree')
+import MerkleTree = require('./merkletree');
+import Transaction = require('./../transaction/transaction')
 
 
 class Block {

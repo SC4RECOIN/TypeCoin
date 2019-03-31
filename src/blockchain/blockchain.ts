@@ -1,16 +1,20 @@
 import Block = require('./block/block');
+import TransactionPool = require('./transaction/txpool')
+import Transaction = require('./transaction/transaction')
+import { TxIn, TxOut, UnspentTxOut } from './../types/transaction';
+
 
 class Blockchain {
 
   chain: Block[];
   difficulty: number;
-  pendingTransactions: Transaction[];
+  pendingTransactions: TransactionPool;
   miningReward: number;
 
   constructor(blocks?: Block[]) {
     this.chain = blocks || [this.createGenesisBlock()];
     this.difficulty = 2;
-    this.pendingTransactions = [];
+    this.pendingTransactions = new TransactionPool();
     this.miningReward = 100;
   }
 
@@ -44,60 +48,32 @@ class Blockchain {
   }
 
   minePendingTransactions(miningRewardAddress: string): Block {
-    const rewardTx = new Transaction(null, miningRewardAddress, this.miningReward);
-    this.pendingTransactions.push(rewardTx);
+    // coinbase tx
+    const rewardTx = Transaction.createCoinbaseTx(miningRewardAddress, this.chain.length, this.miningReward)
+    this.pendingTransactions.addTransaction(rewardTx);
 
-    let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash, this.chain.length + 1);
+    let block = new Block(Date.now(), this.pendingTransactions.pool, this.getLatestBlock().hash, this.chain.length + 1);
     block.mineBlock(this.difficulty);
     this.chain.push(block);
 
-    this.pendingTransactions = [];
+    this.pendingTransactions.clearTxPool();
     return block;
   }
 
   addTransaction(transaction: Transaction) {
-    if (!transaction.fromAddress || !transaction.toAddress) {
-      throw new Error('Transaction must include from and to address');
-    }
-
     // verify the transactiion
     if (!transaction.isValid()) {
       throw new Error('Cannot add invalid transaction to chain');
     }
 
-    this.pendingTransactions.push(transaction);
+    this.pendingTransactions.addTransaction(transaction);
   }
 
-  getBalanceOfAddress(address: string): number {
-    let balance = 0;
-
-    for (const block of this.chain) {
-      for (const trans of block.transactions) {
-        if (trans.fromAddress === address) {
-          balance -= trans.amount;
-        }
-
-        if (trans.toAddress === address) {
-          balance += trans.amount;
-        }
-      }
-    }
-
-    return balance;
-  }
-
-  getAllTransactionsForWallet(address: string): Transaction[] {
-    const txs = [];
-
-    for (const block of this.chain) {
-      for (const tx of block.transactions) {
-        if (tx.fromAddress === address || tx.toAddress === address) {
-          txs.push(tx);
-        }
-      }
-    }
-
-    return txs;
+  getBalanceOfAddress(address: string, uTxOuts: UnspentTxOut[]): number {
+    const addressUTxO = uTxOuts.filter((uTxO) => uTxO.address === address);
+    return addressUTxO
+      .map((uTxO: UnspentTxOut) => uTxO.amount)
+      .reduce((a,b) => a + b, 0);
   }
 
   isChainValid(): boolean {
