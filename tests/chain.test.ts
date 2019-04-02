@@ -1,5 +1,6 @@
 import Blockchain = require('./../src/blockchain/blockchain');
 import Transaction = require('./../src/blockchain/transaction/transaction');
+import Wallet = require('./../src/wallet/wallet');
 import { ec as EC } from 'elliptic';
 import { expect } from 'chai';
 import 'mocha';
@@ -7,16 +8,15 @@ import 'mocha';
 
 describe('Chain Tests', function() {
 
-    // generate a new key pair and convert them to hex-strings
-    const ec = new EC('secp256k1');
-    const key = ec.genKeyPair();
-    const walletAddress = key.getPublic('hex');
-
-    // chain
+    // setup wallet and chain
+    const wallet = new Wallet();
     const typeCoin = new Blockchain();
 
+    // mine block to add coins to chain
+    typeCoin.minePendingTransactions(wallet.address);
+
     // create transaction and mine block
-    const tx1 = new Transaction(walletAddress, 'address1', 100);
+    const tx1 = wallet.createTransaction('address1', 100, )
     tx1.signTransaction(key);
     typeCoin.addTransaction(tx1);
     typeCoin.minePendingTransactions(walletAddress);

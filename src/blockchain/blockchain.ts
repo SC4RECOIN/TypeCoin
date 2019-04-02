@@ -7,6 +7,7 @@ import { TxIn, TxOut, UnspentTxOut } from './../types/transaction';
 class Blockchain {
 
   chain: Block[];
+  uTxOuts: UnspentTxOut[];
   difficulty: number;
   pendingTransactions: TransactionPool;
   miningReward: number;
@@ -55,6 +56,38 @@ class Blockchain {
     let block = new Block(Date.now(), this.pendingTransactions.pool, this.getLatestBlock().hash, this.chain.length + 1);
     block.mineBlock(this.difficulty);
     this.chain.push(block);
+
+    // find new outputs
+    const newUTxOuts: UnspentTxOut[] = this.pendingTransactions.pool
+      .map((t) => { 
+        return t.txOuts.map((txOut, index) => {
+          return {
+            txOutId: t.id, 
+            txOutIndex: index, 
+            address: txOut.address, 
+            amount: txOut.amount
+          }
+        });
+      })
+      .reduce((a, b) => a.concat(b), []);
+
+    // find outputs that have been used
+    const consumedTxOuts: UnspentTxOut[] = this.pendingTransactions.pool
+      .map((t) => t.txIns)
+      .reduce((a, b) => a.concat(b), [])
+      .map((txIn) => {
+        return {
+            txOutId: txIn.txOutId,
+            txOutIndex: txIn.txOutIndex, 
+            address: '', 
+            amount: 0
+          }
+      });
+    
+    // update uTxOuts
+    this.uTxOuts = this.uTxOuts
+      .filter(((uTxO) => !consumedTxOuts.find((cTx) => cTx.txOutId === uTxO.txOutId && cTx.txOutIndex === uTxO.txOutIndex)))
+      .concat(newUTxOuts);
 
     this.pendingTransactions.clearTxPool();
     return block;
@@ -105,4 +138,4 @@ class Blockchain {
   }
 }
 
-export = Blockchain;
+export default Blockchain;
