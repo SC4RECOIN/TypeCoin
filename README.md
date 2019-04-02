@@ -16,4 +16,4 @@ A cryptocurrency written in typescript
 - [ ] Transaction pool
 - [ ] Coinbase tx
 - [ ] UI
- 
+- [ ] ES6
