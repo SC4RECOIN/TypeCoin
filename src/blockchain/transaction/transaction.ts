@@ -10,6 +10,7 @@ class Transaction {
 
   constructor(txIns: TxIn[], txOuts: TxOut[], signingKey?: EC.KeyPair) {
     this.txOuts = txOuts;
+    this.txIns = txIns;
 
     this.id = this.getTransactionId();
     this.signature = signingKey != null ? signingKey.sign(this.id).toDER('hex') : '';

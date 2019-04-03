@@ -17,6 +17,7 @@ class Blockchain {
     this.difficulty = 2;
     this.pendingTransactions = new TransactionPool();
     this.miningReward = 100;
+    this.uTxOuts = [];
   }
 
   createGenesisBlock(): Block {

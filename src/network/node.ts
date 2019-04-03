@@ -31,13 +31,18 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer, wal
 
     app.post('/transaction', (req, res) => {
         // create transaction
-        const tx = wallet.createTransaction(req.body.toAddress, req.body.amount, chain.uTxOuts)
+        let tx;
+        try {
+            tx = wallet.createTransaction(req.body.toAddress, req.body.amount, chain.uTxOuts);
+        } catch (err) {
+            res.send(JSON.stringify({message: err.message}))
+        }
 
         if (tx.isValid()) {
             chain.addTransaction(tx);
             res.send(JSON.stringify({message: "Transaction added"}));
         } else {
-            res.send("Invalid transaction")
+            res.send(JSON.stringify({message: "Invalid transaction"}));
         }
     });
 

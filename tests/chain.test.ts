@@ -40,13 +40,13 @@ describe('Chain Tests', function() {
     typeCoin.minePendingTransactions(wallet.address);
 
     it('Chain length', function() {
-      // 2 mined block + genesis
-      expect(typeCoin.chain.length).equal(3);
+      // 3 mined block + genesis
+      expect(typeCoin.chain.length).equal(4);
     });
   
     it('Wallet balance', function() {
       let result = typeCoin.getBalanceOfAddress(wallet.address);
-      expect(result).equal(170);
+      expect(result).equal(270);
     });
 
     it('Valid chain', function() {

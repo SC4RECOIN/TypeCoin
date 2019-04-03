@@ -40,10 +40,20 @@ describe('Socket Tests', function() {
     server2.close();
   });
 
-  // generate a new key pair and convert them to hex-strings
-  const ec = new EC('secp256k1');
-  const keySet1 = ec.genKeyPair();
-  const keySet2 = ec.genKeyPair();
+  it('Mining without any txs', async function () {
+    try {
+      const response = await fetch("http://localhost:" + server1Port + "/mine", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rewardAddress: wallet1.address })
+      });
+      const data = await response.json();
+      expect(data.statusCode).equal(200);
+    }
+    catch (error) {
+      assert.fail(`Mining request failed: ${error}`);
+    }
+  });
 
   it('Add peer', async function () {
     try {
@@ -63,9 +73,7 @@ describe('Socket Tests', function() {
 
   it('Sending transaction', async function () {
     const transactionMsg = {
-      fromAddress: keySet1.getPublic('hex'),
-      toAddress: keySet2.getPublic('hex'),
-      privateKey: keySet1.getPrivate('hex'),
+      toAddress: wallet1.address,
       amount: 10.0
     }
 
@@ -90,7 +98,7 @@ describe('Socket Tests', function() {
       const response = await fetch("http://localhost:" + server1Port + "/mine", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rewardAddress: keySet1.getPublic('hex') })
+        body: JSON.stringify({ rewardAddress: wallet1.address })
       });
       const data = await response.json();
       expect(data.statusCode).equal(200);
@@ -106,10 +114,10 @@ describe('Socket Tests', function() {
       const response = await fetch("http://localhost:" + server1Port + "/balance", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: keySet1.getPublic('hex') })
+        body: JSON.stringify({ address: wallet1.address })
       });
       const data = await response.json();
-      expect(data.balance).equal(90);
+      expect(data.balance).equal(190);
     }
     catch (error) {
       assert.fail(`Balance request failed: ${error}`);
@@ -122,10 +130,10 @@ describe('Socket Tests', function() {
       const response = await fetch("http://localhost:" + server2Port + "/balance", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: keySet1.getPublic('hex') })
+        body: JSON.stringify({ address: wallet1.address })
       });
       const data = await response.json();
-      expect(data.balance).equal(90);
+      expect(data.balance).equal(190);
     }
     catch (error) {
       assert.fail(`Balance request failed: ${error}`);
