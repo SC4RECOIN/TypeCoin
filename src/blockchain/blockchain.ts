@@ -1,18 +1,23 @@
-import Block = require('./block/block');
-import Transaction = require('./transaction');
+import Block from './block/block';
+import TransactionPool from './transaction/txpool';
+import Transaction from './transaction/transaction';
+import { TxIn, TxOut, UnspentTxOut } from './../types/transaction';
+
 
 class Blockchain {
 
   chain: Block[];
+  uTxOuts: UnspentTxOut[];
   difficulty: number;
-  pendingTransactions: Transaction[];
+  pendingTransactions: TransactionPool;
   miningReward: number;
 
   constructor(blocks?: Block[]) {
     this.chain = blocks || [this.createGenesisBlock()];
     this.difficulty = 2;
-    this.pendingTransactions = [];
+    this.pendingTransactions = new TransactionPool();
     this.miningReward = 100;
+    this.uTxOuts = [];
   }
 
   createGenesisBlock(): Block {
@@ -39,66 +44,76 @@ class Blockchain {
   addBlock(newBlock: Block): boolean {
     if (newBlock.hasValidTransactions) {
       this.chain.push(newBlock);
+      this.updateUnspentTxOs(newBlock.transactions)
       return true;
     }
     return false;
   }
 
-  minePendingTransactions(miningRewardAddress: string): Block {
-    const rewardTx = new Transaction(null, miningRewardAddress, this.miningReward);
-    this.pendingTransactions.push(rewardTx);
+  updateUnspentTxOs(txs: Transaction[]) {
+    // find new outputs
+    const newUTxOuts: UnspentTxOut[] = txs
+      .map((t) => { 
+        return t.txOuts.map((txOut, index) => {
+          return {
+            txOutId: t.id, 
+            txOutIndex: index, 
+            address: txOut.address, 
+            amount: txOut.amount
+          }
+        });
+      })
+      .reduce((a, b) => a.concat(b), []);
 
-    let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash, this.chain.length + 1);
+    // find outputs that have been used
+    const consumedTxOuts: UnspentTxOut[] = txs
+      .map((t) => t.txIns)
+      .reduce((a, b) => a.concat(b), [])
+      .map((txIn) => {
+        return {
+            txOutId: txIn.txOutId,
+            txOutIndex: txIn.txOutIndex, 
+            address: '', 
+            amount: 0
+          }
+      });
+    
+    // update uTxOuts
+    this.uTxOuts = this.uTxOuts
+      .filter(((uTxO) => !consumedTxOuts.find((cTx) => cTx.txOutId === uTxO.txOutId && cTx.txOutIndex === uTxO.txOutIndex)))
+      .concat(newUTxOuts);
+  }
+
+  minePendingTransactions(miningRewardAddress: string): Block {
+    // coinbase tx
+    const rewardTx = Transaction.createCoinbaseTx(miningRewardAddress, this.chain.length, this.miningReward)
+    this.pendingTransactions.addTransaction(rewardTx);
+
+    let block = new Block(Date.now(), this.pendingTransactions.pool, this.getLatestBlock().hash, this.chain.length + 1);
     block.mineBlock(this.difficulty);
     this.chain.push(block);
 
-    this.pendingTransactions = [];
+    // find new outputs
+    this.updateUnspentTxOs(this.pendingTransactions.pool);
+
+    this.pendingTransactions.clearTxPool();
     return block;
   }
 
   addTransaction(transaction: Transaction) {
-    if (!transaction.fromAddress || !transaction.toAddress) {
-      throw new Error('Transaction must include from and to address');
-    }
-
     // verify the transactiion
     if (!transaction.isValid()) {
       throw new Error('Cannot add invalid transaction to chain');
     }
 
-    this.pendingTransactions.push(transaction);
+    this.pendingTransactions.addTransaction(transaction);
   }
 
   getBalanceOfAddress(address: string): number {
-    let balance = 0;
-
-    for (const block of this.chain) {
-      for (const trans of block.transactions) {
-        if (trans.fromAddress === address) {
-          balance -= trans.amount;
-        }
-
-        if (trans.toAddress === address) {
-          balance += trans.amount;
-        }
-      }
-    }
-
-    return balance;
-  }
-
-  getAllTransactionsForWallet(address: string): Transaction[] {
-    const txs = [];
-
-    for (const block of this.chain) {
-      for (const tx of block.transactions) {
-        if (tx.fromAddress === address || tx.toAddress === address) {
-          txs.push(tx);
-        }
-      }
-    }
-
-    return txs;
+    const addressUTxO = this.uTxOuts.filter((uTxO) => uTxO.address === address);
+    return addressUTxO
+      .map((uTxO: UnspentTxOut) => uTxO.amount)
+      .reduce((a,b) => a + b, 0);
   }
 
   isChainValid(): boolean {
@@ -130,4 +145,4 @@ class Blockchain {
   }
 }
 
-export = Blockchain;
+export default Blockchain;

@@ -1,6 +1,7 @@
-import Blockchain = require('../src/blockchain/blockchain');
-import { initHttpServer } from '../src/network/node';
-import p2pServer = require('../src/network/p2p');
+import Blockchain from '../src/blockchain/blockchain';
+import initHttpServer from '../src/network/node';
+import p2pServer from '../src/network/p2p';
+import Wallet from '../src/wallet/wallet';
 import fetch from 'node-fetch';
 import { ec as EC } from 'elliptic';
 import { expect, assert } from 'chai';
@@ -16,15 +17,19 @@ describe('Socket Tests', function() {
   let server2;
   let p2p1;
   let p2p2;
+  let wallet1;
+  let wallet2;
 
   before(function() {
     const typeCoin1 = new Blockchain();
+    wallet1 = new Wallet();
     p2p1 = new p2pServer(socket1Port, typeCoin1);
-    server1 = initHttpServer(server1Port, typeCoin1, p2p1);
+    server1 = initHttpServer(server1Port, typeCoin1, p2p1, wallet1);
 
+    wallet2 = new Wallet();
     const typeCoin2 = new Blockchain();
     p2p2 = new p2pServer(socket2Port, typeCoin2);
-    server2 = initHttpServer(server2Port, typeCoin2, p2p2);
+    server2 = initHttpServer(server2Port, typeCoin2, p2p2, wallet2);
   });
 
   // close after tests
@@ -35,10 +40,20 @@ describe('Socket Tests', function() {
     server2.close();
   });
 
-  // generate a new key pair and convert them to hex-strings
-  const ec = new EC('secp256k1');
-  const keySet1 = ec.genKeyPair();
-  const keySet2 = ec.genKeyPair();
+  it('Mining without any txs', async function () {
+    try {
+      const response = await fetch("http://localhost:" + server1Port + "/mine", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rewardAddress: wallet1.address })
+      });
+      const data = await response.json();
+      expect(data.statusCode).equal(200);
+    }
+    catch (error) {
+      assert.fail(`Mining request failed: ${error}`);
+    }
+  });
 
   it('Add peer', async function () {
     try {
@@ -58,9 +73,7 @@ describe('Socket Tests', function() {
 
   it('Sending transaction', async function () {
     const transactionMsg = {
-      fromAddress: keySet1.getPublic('hex'),
-      toAddress: keySet2.getPublic('hex'),
-      privateKey: keySet1.getPrivate('hex'),
+      toAddress: wallet2.address,
       amount: 10.0
     }
 
@@ -85,7 +98,7 @@ describe('Socket Tests', function() {
       const response = await fetch("http://localhost:" + server1Port + "/mine", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rewardAddress: keySet1.getPublic('hex') })
+        body: JSON.stringify({ rewardAddress: wallet1.address })
       });
       const data = await response.json();
       expect(data.statusCode).equal(200);
@@ -101,10 +114,10 @@ describe('Socket Tests', function() {
       const response = await fetch("http://localhost:" + server1Port + "/balance", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: keySet1.getPublic('hex') })
+        body: JSON.stringify({ address: wallet1.address })
       });
       const data = await response.json();
-      expect(data.balance).equal(90);
+      expect(data.balance).equal(190);
     }
     catch (error) {
       assert.fail(`Balance request failed: ${error}`);
@@ -117,10 +130,10 @@ describe('Socket Tests', function() {
       const response = await fetch("http://localhost:" + server2Port + "/balance", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: keySet1.getPublic('hex') })
+        body: JSON.stringify({ address: wallet1.address })
       });
       const data = await response.json();
-      expect(data.balance).equal(90);
+      expect(data.balance).equal(190);
     }
     catch (error) {
       assert.fail(`Balance request failed: ${error}`);

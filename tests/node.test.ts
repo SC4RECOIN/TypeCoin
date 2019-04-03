@@ -1,20 +1,26 @@
-import Blockchain = require('./../src/blockchain/blockchain');
-import { initHttpServer } from './../src/network/node';
-import p2pServer = require('./../src/network/p2p');
+import Blockchain from './../src/blockchain/blockchain';
+import initHttpServer from './../src/network/node';
+import p2pServer from './../src/network/p2p';
+import Wallet from '../src/wallet/wallet';
 import fetch from 'node-fetch';
-import { ec as EC } from 'elliptic';
 import { expect, assert } from 'chai';
 import 'mocha';
 
 
-describe('Network Tests', function() {
+describe('Node Tests', function() {
   const port: number = 3005
+  let wallet: Wallet;
   let server;
   let p2p;
+  
   before(function() {
     const typeCoin = new Blockchain();
     p2p = new p2pServer(3010, typeCoin);
-    server = initHttpServer(port, typeCoin, p2p);
+    wallet = new Wallet();
+    server = initHttpServer(port, typeCoin, p2p, wallet);
+
+    // mine to add coins to wallet
+    typeCoin.minePendingTransactions(wallet.address)
   });
 
   // close server after tests
@@ -23,16 +29,12 @@ describe('Network Tests', function() {
     server.close();
   });
 
-  // generate a new key pair and convert them to hex-strings
-  const ec = new EC('secp256k1');
-  const keySet1 = ec.genKeyPair();
-  const keySet2 = ec.genKeyPair();
+  // create two wallets
+  const tempWallet = new Wallet();
 
   it('Sending transaction', async function () {
     const transactionMsg = {
-      fromAddress: keySet1.getPublic('hex'),
-      toAddress: keySet2.getPublic('hex'),
-      privateKey: keySet1.getPrivate('hex'),
+      toAddress: tempWallet.address,
       amount: 10.0
     }
 
@@ -57,7 +59,7 @@ describe('Network Tests', function() {
       const response = await fetch("http://localhost:" + port + "/mine", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rewardAddress: keySet1.getPublic('hex') })
+        body: JSON.stringify({ rewardAddress: wallet.address })
       });
       const data = await response.json();
       expect(data.statusCode).equal(200);
@@ -73,10 +75,10 @@ describe('Network Tests', function() {
       const response = await fetch("http://localhost:" + port + "/balance", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: keySet1.getPublic('hex') })
+        body: JSON.stringify({ address: wallet.address })
       });
       const data = await response.json();
-      expect(data.balance).equal(90);
+      expect(data.balance).equal(190);
     }
     catch (error) {
       assert.fail(`Balance request failed: ${error}`);

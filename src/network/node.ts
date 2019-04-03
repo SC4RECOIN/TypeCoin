@@ -1,14 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser')
-import Blockchain = require('../blockchain/blockchain');
-import Block = require('../blockchain/block/block');
-import Transaction = require('../blockchain/transaction');
-import { ec as EC } from 'elliptic';
-import p2pServer = require('./p2p');
+import Blockchain from '../blockchain/blockchain';
+import Block from '../blockchain/block/block';
+import Wallet from '../wallet/wallet';
+import p2pServer from './p2p';
 import { MessageType } from '../types/message'
 
 
-const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer) => {
+const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer, wallet: Wallet) => {
     const app = express();
     app.use(bodyParser.json());
 
@@ -30,18 +29,18 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer) => 
 
     app.post('/transaction', (req, res) => {
         // create transaction
-        const transaction = new Transaction(req.body.fromAddress, req.body.toAddress, req.body.amount)
+        let tx;
+        try {
+            tx = wallet.createTransaction(req.body.toAddress, req.body.amount, chain.uTxOuts);
+        } catch (err) {
+            res.send(JSON.stringify({message: err.message}))
+        }
 
-        // signature
-        const ec = new EC('secp256k1');
-        const key = ec.keyFromPrivate(req.body.privateKey);
-        transaction.signTransaction(key);
-
-        if (transaction.isValid()) {
-            chain.addTransaction(transaction);
+        if (tx.isValid()) {
+            chain.addTransaction(tx);
             res.send(JSON.stringify({message: "Transaction added"}));
         } else {
-            res.send("Invalid transaction")
+            res.send(JSON.stringify({message: "Invalid transaction"}));
         }
     });
 
@@ -80,4 +79,4 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer) => 
     return server;
 }
 
-export { initHttpServer };
+export default initHttpServer;

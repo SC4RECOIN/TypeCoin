@@ -1,6 +1,6 @@
-import SHA256 = require('crypto-js/sha256');
-import Transaction = require('./../transaction');
-import MerkleTree = require('./merkletree')
+const SHA256 = require('crypto-js/sha256');
+import MerkleTree from './merkletree';
+import Transaction from './../transaction/transaction';
 
 
 class Block {
@@ -32,13 +32,13 @@ class Block {
   }
 
   calculateMerkleRoot() {
-    const leaves = this.transactions.map(t => SHA256(t.toString()).toString());
+    const leaves = this.transactions.map(t => SHA256(t.id).toString());
     this.merkleTree = new MerkleTree(leaves)
     this.merkleRoot = this.merkleTree.getRoot().toString('hex')
   }
 
   getMerkleProof(transaction: Transaction): boolean {
-    const leaf = SHA256(transaction.toString()).toString()
+    const leaf = SHA256(transaction.id).toString()
     const proof = this.merkleTree.getProof(leaf)
     return this.merkleTree.verify(proof, leaf, this.merkleRoot)
   }
@@ -73,4 +73,4 @@ class Block {
   }
 }
 
-export = Block;
+export default Block;

@@ -1,5 +1,5 @@
-import reverse = require('buffer-reverse');
-import CryptoJS = require('crypto-js');
+const reverse = require('buffer-reverse');
+const CryptoJS = require('crypto-js');
 
 
 interface Proof {
@@ -130,4 +130,4 @@ class MerkleTree {
   }
 }
 
-export = MerkleTree
+export default MerkleTree
