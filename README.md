@@ -11,9 +11,9 @@ A cryptocurrency written in typescript
 - [ ] POS
 - [x] Unit tests
 - [x] TravisCI integration
-- [ ] Wallet
-- [ ] uTxOut
-- [ ] Transaction pool
-- [ ] Coinbase tx
+- [x] Wallet
+- [x] uTxOut
+- [x] Transaction pool
+- [x] Coinbase tx
 - [ ] UI
-- [ ] ES6
+- [x] ES6
