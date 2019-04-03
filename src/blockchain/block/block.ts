@@ -38,7 +38,7 @@ class Block {
   }
 
   getMerkleProof(transaction: Transaction): boolean {
-    const leaf = SHA256(transaction.toString()).toString()
+    const leaf = SHA256(transaction.id).toString()
     const proof = this.merkleTree.getProof(leaf)
     return this.merkleTree.verify(proof, leaf, this.merkleRoot)
   }
