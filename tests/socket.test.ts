@@ -73,7 +73,7 @@ describe('Socket Tests', function() {
 
   it('Sending transaction', async function () {
     const transactionMsg = {
-      toAddress: wallet1.address,
+      toAddress: wallet2.address,
       amount: 10.0
     }
 

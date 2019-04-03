@@ -44,22 +44,15 @@ class Blockchain {
   addBlock(newBlock: Block): boolean {
     if (newBlock.hasValidTransactions) {
       this.chain.push(newBlock);
+      this.updateUnspentTxOs(newBlock.transactions)
       return true;
     }
     return false;
   }
 
-  minePendingTransactions(miningRewardAddress: string): Block {
-    // coinbase tx
-    const rewardTx = Transaction.createCoinbaseTx(miningRewardAddress, this.chain.length, this.miningReward)
-    this.pendingTransactions.addTransaction(rewardTx);
-
-    let block = new Block(Date.now(), this.pendingTransactions.pool, this.getLatestBlock().hash, this.chain.length + 1);
-    block.mineBlock(this.difficulty);
-    this.chain.push(block);
-
+  updateUnspentTxOs(txs: Transaction[]) {
     // find new outputs
-    const newUTxOuts: UnspentTxOut[] = this.pendingTransactions.pool
+    const newUTxOuts: UnspentTxOut[] = txs
       .map((t) => { 
         return t.txOuts.map((txOut, index) => {
           return {
@@ -73,7 +66,7 @@ class Blockchain {
       .reduce((a, b) => a.concat(b), []);
 
     // find outputs that have been used
-    const consumedTxOuts: UnspentTxOut[] = this.pendingTransactions.pool
+    const consumedTxOuts: UnspentTxOut[] = txs
       .map((t) => t.txIns)
       .reduce((a, b) => a.concat(b), [])
       .map((txIn) => {
@@ -89,6 +82,19 @@ class Blockchain {
     this.uTxOuts = this.uTxOuts
       .filter(((uTxO) => !consumedTxOuts.find((cTx) => cTx.txOutId === uTxO.txOutId && cTx.txOutIndex === uTxO.txOutIndex)))
       .concat(newUTxOuts);
+  }
+
+  minePendingTransactions(miningRewardAddress: string): Block {
+    // coinbase tx
+    const rewardTx = Transaction.createCoinbaseTx(miningRewardAddress, this.chain.length, this.miningReward)
+    this.pendingTransactions.addTransaction(rewardTx);
+
+    let block = new Block(Date.now(), this.pendingTransactions.pool, this.getLatestBlock().hash, this.chain.length + 1);
+    block.mineBlock(this.difficulty);
+    this.chain.push(block);
+
+    // find new outputs
+    this.updateUnspentTxOs(this.pendingTransactions.pool);
 
     this.pendingTransactions.clearTxPool();
     return block;

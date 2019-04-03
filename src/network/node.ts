@@ -3,8 +3,6 @@ const bodyParser = require('body-parser')
 import Blockchain from '../blockchain/blockchain';
 import Block from '../blockchain/block/block';
 import Wallet from '../wallet/wallet';
-import Transaction from '../blockchain/transaction/transaction';
-import { ec as EC } from 'elliptic';
 import p2pServer from './p2p';
 import { MessageType } from '../types/message'
 
