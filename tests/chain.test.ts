@@ -1,7 +1,6 @@
-import Blockchain = require('./../src/blockchain/blockchain');
-import Transaction = require('./../src/blockchain/transaction/transaction');
-import Wallet = require('./../src/wallet/wallet');
-import { ec as EC } from 'elliptic';
+import Blockchain from './../src/blockchain/blockchain';
+import Transaction from './../src/blockchain/transaction/transaction';
+import Wallet from './../src/wallet/wallet';
 import { expect } from 'chai';
 import 'mocha';
 

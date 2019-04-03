@@ -1,5 +1,5 @@
 import { ec as EC } from 'elliptic';
-import SHA256 = require('crypto-js/sha256');
+const SHA256 = require('crypto-js/sha256');
 import { TxIn, TxOut } from '../../types/transaction';
 
 class Transaction {
@@ -54,4 +54,4 @@ class Transaction {
   }
 } 
 
-export = Transaction
+export default Transaction

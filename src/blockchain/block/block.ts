@@ -1,6 +1,6 @@
-import SHA256 = require('crypto-js/sha256');
-import MerkleTree = require('./merkletree');
-import Transaction = require('./../transaction/transaction')
+const SHA256 = require('crypto-js/sha256');
+import MerkleTree from './merkletree';
+import Transaction from './../transaction/transaction';
 
 
 class Block {
@@ -73,4 +73,4 @@ class Block {
   }
 }
 
-export = Block;
+export default Block;

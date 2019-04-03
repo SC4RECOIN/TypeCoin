@@ -1,6 +1,6 @@
-import Block = require('./block/block');
-import TransactionPool = require('./transaction/txpool')
-import Transaction = require('./transaction/transaction')
+import Block from './block/block';
+import TransactionPool from './transaction/txpool';
+import Transaction from './transaction/transaction';
 import { TxIn, TxOut, UnspentTxOut } from './../types/transaction';
 
 

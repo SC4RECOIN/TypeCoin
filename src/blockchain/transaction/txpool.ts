@@ -1,5 +1,4 @@
-import Transaction = require('./transaction');
-import { TxIn, TxOut, UnspentTxOut } from '../../types/transaction';
+import Transaction from './transaction';
 
 
 class TransactionPool {
@@ -34,4 +33,4 @@ class TransactionPool {
   }
 }
 
-export = TransactionPool;
+export default TransactionPool;

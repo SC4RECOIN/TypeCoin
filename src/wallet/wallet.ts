@@ -1,5 +1,5 @@
 import { TxIn, TxOut, UnspentTxOut } from './../types/transaction';
-import Transaction = require('../blockchain/transaction/transaction');
+import Transaction from '../blockchain/transaction/transaction';
 import { ec as EC } from 'elliptic';
 
 
@@ -83,4 +83,4 @@ class Wallet {
   };
 }
 
-export = Wallet;
+export default Wallet;

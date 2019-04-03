@@ -1,10 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser')
-import Blockchain = require('../blockchain/blockchain');
-import Block = require('../blockchain/block/block');
-import Transaction = require('../blockchain/transaction/transaction');
+import Blockchain from '../blockchain/blockchain';
+import Block from '../blockchain/block/block';
+import Transaction from '../blockchain/transaction/transaction';
 import { ec as EC } from 'elliptic';
-import p2pServer = require('./p2p');
+import p2pServer from './p2p';
 import { MessageType } from '../types/message'
 
 
@@ -80,4 +80,4 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer) => 
     return server;
 }
 
-export { initHttpServer };
+export default initHttpServer;

@@ -1,7 +1,7 @@
 import * as WebSocket from 'ws';
 import {Server} from 'ws';
-import Block = require('../blockchain/block/block');
-import Blockchain = require('../blockchain/blockchain');
+import Block from '../blockchain/block/block';
+import Blockchain from '../blockchain/blockchain';
 import { MessageType, Message } from '../types/message'
 
 
@@ -137,4 +137,4 @@ class p2pServer {
   };
 }
 
-export = p2pServer;
+export default p2pServer;
