@@ -1,6 +1,7 @@
-import Blockchain = require('./../src/blockchain/blockchain');
-import { initHttpServer } from './../src/network/node';
-import p2pServer = require('./../src/network/p2p');
+import Blockchain from './../src/blockchain/blockchain';
+import initHttpServer from './../src/network/node';
+import p2pServer from './../src/network/p2p';
+import Wallet from '../src/wallet/wallet';
 import fetch from 'node-fetch';
 import { ec as EC } from 'elliptic';
 import { expect, assert } from 'chai';
@@ -9,12 +10,14 @@ import 'mocha';
 
 describe('Network Tests', function() {
   const port: number = 3005
+  let wallet: Wallet;
   let server;
   let p2p;
   before(function() {
     const typeCoin = new Blockchain();
     p2p = new p2pServer(3010, typeCoin);
-    server = initHttpServer(port, typeCoin, p2p);
+    wallet = new Wallet();
+    server = initHttpServer(port, typeCoin, p2p, wallet);
   });
 
   // close server after tests

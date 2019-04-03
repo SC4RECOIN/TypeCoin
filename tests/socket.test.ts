@@ -1,6 +1,7 @@
-import Blockchain = require('../src/blockchain/blockchain');
-import { initHttpServer } from '../src/network/node';
-import p2pServer = require('../src/network/p2p');
+import Blockchain from '../src/blockchain/blockchain';
+import initHttpServer from '../src/network/node';
+import p2pServer from '../src/network/p2p';
+import Wallet from '../src/wallet/wallet';
 import fetch from 'node-fetch';
 import { ec as EC } from 'elliptic';
 import { expect, assert } from 'chai';
@@ -16,15 +17,19 @@ describe('Socket Tests', function() {
   let server2;
   let p2p1;
   let p2p2;
+  let wallet1;
+  let wallet2;
 
   before(function() {
     const typeCoin1 = new Blockchain();
+    wallet1 = new Wallet();
     p2p1 = new p2pServer(socket1Port, typeCoin1);
-    server1 = initHttpServer(server1Port, typeCoin1, p2p1);
+    server1 = initHttpServer(server1Port, typeCoin1, p2p1, wallet1);
 
+    wallet2 = new Wallet();
     const typeCoin2 = new Blockchain();
     p2p2 = new p2pServer(socket2Port, typeCoin2);
-    server2 = initHttpServer(server2Port, typeCoin2, p2p2);
+    server2 = initHttpServer(server2Port, typeCoin2, p2p2, wallet2);
   });
 
   // close after tests
