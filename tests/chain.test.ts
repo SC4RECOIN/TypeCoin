@@ -15,10 +15,9 @@ describe('Chain Tests', function() {
     typeCoin.minePendingTransactions(wallet.address);
 
     // create transaction and mine block
-    const tx1 = wallet.createTransaction('address1', 100, )
-    tx1.signTransaction(key);
+    const tx1 = wallet.createTransaction('address_placeholder', 10, typeCoin.uTxOuts)
     typeCoin.addTransaction(tx1);
-    typeCoin.minePendingTransactions(walletAddress);
+    typeCoin.minePendingTransactions(wallet.address);
 
     // verify tx1 exists
     const block = typeCoin.chain[typeCoin.chain.length - 1];
@@ -29,24 +28,25 @@ describe('Chain Tests', function() {
     });
 
     it('Transaction does not exists', function() {
-      const txNotAdded = new Transaction(walletAddress, 'address1', 100);
+      // creating transaction and not adding it to chain
+      const txNotAdded = wallet.createTransaction('address_placeholder', 10, typeCoin.uTxOuts)
       let result = block.getMerkleProof(txNotAdded);
       expect(result).equal(false);
     });
 
     // create second transaction
-    const tx2 = new Transaction(walletAddress, 'address2', 50);
-    tx2.signTransaction(key);
+    const tx2 = wallet.createTransaction('address_placeholder', 20, typeCoin.uTxOuts)
     typeCoin.addTransaction(tx2);
-    typeCoin.minePendingTransactions(walletAddress);
+    typeCoin.minePendingTransactions(wallet.address);
 
     it('Chain length', function() {
+      // 2 mined block + genesis
       expect(typeCoin.chain.length).equal(3);
     });
   
     it('Wallet balance', function() {
-      let result = typeCoin.getBalanceOfAddress(walletAddress);
-      expect(result).equal(50);
+      let result = typeCoin.getBalanceOfAddress(wallet.address);
+      expect(result).equal(170);
     });
 
     it('Valid chain', function() {

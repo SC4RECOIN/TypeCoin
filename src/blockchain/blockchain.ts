@@ -102,8 +102,8 @@ class Blockchain {
     this.pendingTransactions.addTransaction(transaction);
   }
 
-  getBalanceOfAddress(address: string, uTxOuts: UnspentTxOut[]): number {
-    const addressUTxO = uTxOuts.filter((uTxO) => uTxO.address === address);
+  getBalanceOfAddress(address: string): number {
+    const addressUTxO = this.uTxOuts.filter((uTxO) => uTxO.address === address);
     return addressUTxO
       .map((uTxO: UnspentTxOut) => uTxO.amount)
       .reduce((a,b) => a + b, 0);

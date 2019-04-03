@@ -32,7 +32,7 @@ class Block {
   }
 
   calculateMerkleRoot() {
-    const leaves = this.transactions.map(t => SHA256(t.toString()).toString());
+    const leaves = this.transactions.map(t => SHA256(t.id).toString());
     this.merkleTree = new MerkleTree(leaves)
     this.merkleRoot = this.merkleTree.getRoot().toString('hex')
   }
