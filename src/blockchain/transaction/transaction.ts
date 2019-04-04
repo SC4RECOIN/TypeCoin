@@ -1,19 +1,19 @@
 import { ec as EC } from 'elliptic';
 const SHA256 = require('crypto-js/sha256');
-import { TxIn, TxOut } from '../../types/transaction';
+import { TxIn, TxOut, UnspentTxOut } from '../../types/transaction';
 
 class Transaction {
   id: string;
   txIns: TxIn[];
   txOuts: TxOut[];
-  signature: string;
+  signature: EC.Signature;
 
   constructor(txIns: TxIn[], txOuts: TxOut[], signingKey?: EC.KeyPair) {
     this.txOuts = txOuts;
     this.txIns = txIns;
 
     this.id = this.getTransactionId();
-    this.signature = signingKey != null ? signingKey.sign(this.id).toDER('hex') : '';
+    this.signature = signingKey != null ? signingKey.sign(this.id) : null;
 
     // add signature to all txIns
     this.txIns = txIns.map((txIn) => {
@@ -50,7 +50,19 @@ class Transaction {
     return SHA256(txInContent + txOutContent).toString();
   }
 
-  isValid(): boolean {
+  isValid(uTxOuts: UnspentTxOut[]): boolean {
+    this.txIns.forEach((txIn) => {
+      // find output for tx inputs
+      const refUTxOut = uTxOuts.find((uTxO) => uTxO.txOutId === txIn.txOutId && uTxO.txOutIndex === txIn.txOutIndex);
+      if (refUTxOut == null) return false;
+  
+      // find address and check signature of txIn
+      const ec = new EC('secp256k1');
+      const key = ec.keyFromPublic(refUTxOut.address, 'hex');
+      
+      if(!key.verify(this.id, txIn.signature)) return false;
+    })
+
     return true;
   }
 } 

@@ -42,7 +42,7 @@ class Blockchain {
   }
 
   addBlock(newBlock: Block): boolean {
-    if (newBlock.hasValidTransactions) {
+    if (newBlock.hasValidTransactions(this.uTxOuts)) {
       this.chain.push(newBlock);
       this.updateUnspentTxOs(newBlock.transactions)
       return true;
@@ -102,7 +102,7 @@ class Blockchain {
 
   addTransaction(transaction: Transaction) {
     // verify the transactiion
-    if (!transaction.isValid()) {
+    if (!transaction.isValid(this.uTxOuts)) {
       throw new Error('Cannot add invalid transaction to chain');
     }
 
@@ -119,7 +119,6 @@ class Blockchain {
   isChainValid(): boolean {
     // check genesis block
     const realGenesis = JSON.stringify(this.createGenesisBlock());
-
     if (realGenesis !== JSON.stringify(this.chain[0])) {
       return false;
     }
@@ -129,18 +128,22 @@ class Blockchain {
       const currentBlock = this.chain[i];
       const previousBlock = this.chain[i - 1];
 
-      if (!currentBlock.hasValidTransactions()) {
+      if (!currentBlock.hasValidTransactions(this.uTxOuts))
         return false;
-      }
 
-      if (currentBlock.hash !== currentBlock.calculateHash()) {
+      if (currentBlock.hash !== currentBlock.calculateHash())
         return false;
-      }
 
-      if (currentBlock.previousHash !== previousBlock.calculateHash()) {
+      if (currentBlock.index !== previousBlock.index + 1)
         return false;
-      }
+
+      if (currentBlock.hash !== currentBlock.calculateHash()) 
+        return false;
+
+      if (currentBlock.previousHash !== previousBlock.calculateHash()) 
+        return false;
     }
+    
     return true;
   }
 }

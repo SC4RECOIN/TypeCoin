@@ -1,7 +1,9 @@
+import { ec as EC } from 'elliptic';
+
 interface TxIn {
   txOutId: string;
   txOutIndex: number;
-  signature?: string;
+  signature?: EC.Signature;
 }
 
 interface TxOut {
