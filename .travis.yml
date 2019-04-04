@@ -1,13 +1,10 @@
 language: node_js
 node_js:
   - "10"
-  - node
 
 before_script:
-  - npm install -g grunt-cli
   - npm run setup
   - npm run build
 
 script:
   - npm run test
-  - grunt coveralls
