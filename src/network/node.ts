@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser')
 import Blockchain from '../blockchain/blockchain';
+import Transaction from '../blockchain/transaction/transaction';
 import Block from '../blockchain/block/block';
 import Wallet from '../wallet/wallet';
 import p2pServer from './p2p';
@@ -29,18 +30,13 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer, wal
 
     app.post('/transaction', (req, res) => {
         // create transaction
-        let tx;
+        let tx: Transaction;
         try {
             tx = wallet.createTransaction(req.body.toAddress, req.body.amount, chain.uTxOuts);
-        } catch (err) {
-            res.send(JSON.stringify({message: err.message}))
-        }
-
-        if (tx.isValid()) {
             chain.addTransaction(tx);
             res.send(JSON.stringify({message: "Transaction added"}));
-        } else {
-            res.send(JSON.stringify({message: "Invalid transaction"}));
+        } catch (err) {
+            res.send(JSON.stringify({message: err.message}));
         }
     });
 

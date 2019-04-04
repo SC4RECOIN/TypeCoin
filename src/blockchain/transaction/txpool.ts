@@ -1,5 +1,5 @@
 import Transaction from './transaction';
-
+import { UnspentTxOut } from '../../types/transaction';
 
 class TransactionPool {
 
@@ -9,8 +9,8 @@ class TransactionPool {
       this.pool = [];
   }
 
-  addTransaction(tx: Transaction) {
-    if (!tx.isValid()) {
+  addTransaction(tx: Transaction, utxout: UnspentTxOut[]) {
+    if (!tx.isValid(utxout)) {
       throw Error('Cannot add invalid tx to pool')
     }
 

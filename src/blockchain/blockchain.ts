@@ -1,7 +1,7 @@
 import Block from './block/block';
 import TransactionPool from './transaction/txpool';
 import Transaction from './transaction/transaction';
-import { TxIn, TxOut, UnspentTxOut } from './../types/transaction';
+import { UnspentTxOut } from './../types/transaction';
 
 
 class Blockchain {
@@ -42,12 +42,13 @@ class Blockchain {
   }
 
   addBlock(newBlock: Block): boolean {
-    if (newBlock.hasValidTransactions(this.uTxOuts)) {
-      this.chain.push(newBlock);
-      this.updateUnspentTxOs(newBlock.transactions)
-      return true;
-    }
-    return false;
+    // newBlock.transactions.forEach((tx) => {
+    //   if (!tx.isValid(this.uTxOuts)) return false;
+    // })
+
+    this.chain.push(newBlock);
+    this.updateUnspentTxOs(newBlock.transactions)
+    return true;
   }
 
   updateUnspentTxOs(txs: Transaction[]) {
@@ -87,7 +88,7 @@ class Blockchain {
   minePendingTransactions(miningRewardAddress: string): Block {
     // coinbase tx
     const rewardTx = Transaction.createCoinbaseTx(miningRewardAddress, this.chain.length, this.miningReward)
-    this.pendingTransactions.addTransaction(rewardTx);
+    this.pendingTransactions.addTransaction(rewardTx, this.uTxOuts);
 
     let block = new Block(Date.now(), this.pendingTransactions.pool, this.getLatestBlock().hash, this.chain.length + 1);
     block.mineBlock(this.difficulty);
@@ -106,7 +107,7 @@ class Blockchain {
       throw new Error('Cannot add invalid transaction to chain');
     }
 
-    this.pendingTransactions.addTransaction(transaction);
+    this.pendingTransactions.addTransaction(transaction, this.uTxOuts);
   }
 
   getBalanceOfAddress(address: string): number {
@@ -143,7 +144,7 @@ class Blockchain {
       if (currentBlock.previousHash !== previousBlock.calculateHash()) 
         return false;
     }
-    
+
     return true;
   }
 }

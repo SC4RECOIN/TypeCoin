@@ -98,7 +98,7 @@ class p2pServer {
 
       // behind by one block
       if (thisLatest.hash === otherLatest.previousHash) {
-        console.log('Behind by one block')
+        console.log('Behind by one block');
         if (this.chain.addBlock(otherLatest)) {
           const message = {
             'type': MessageType.RESPONSE,
