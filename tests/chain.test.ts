@@ -1,5 +1,5 @@
 import Blockchain from './../src/blockchain/blockchain';
-import Transaction from './../src/blockchain/transaction/transaction';
+import { Transaction } from './../src/blockchain/transaction/transaction';
 import Wallet from './../src/wallet/wallet';
 import { expect } from 'chai';
 import 'mocha';

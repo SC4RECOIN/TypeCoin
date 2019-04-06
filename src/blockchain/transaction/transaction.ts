@@ -67,4 +67,21 @@ class Transaction {
   }
 } 
 
-export default Transaction
+// validating transactions that have been broadcasted
+const isTxValid = (tx: Transaction, uTxOuts: UnspentTxOut[]): boolean => {
+  tx.txIns.forEach((txIn) => {
+    // find output for tx inputs
+    const refUTxOut = uTxOuts.find((uTxO) => uTxO.txOutId === txIn.txOutId && uTxO.txOutIndex === txIn.txOutIndex);
+    if (refUTxOut == null) return false;
+
+    // find address and check signature of txIn
+    const ec = new EC('secp256k1');
+    const key = ec.keyFromPublic(refUTxOut.address, 'hex');
+    
+    if(!key.verify(tx.id, txIn.signature)) return false;
+  })
+
+  return true;
+}
+
+export { Transaction, isTxValid}

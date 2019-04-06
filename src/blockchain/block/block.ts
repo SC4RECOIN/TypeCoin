@@ -1,6 +1,6 @@
 const SHA256 = require('crypto-js/sha256');
 import MerkleTree from './merkletree';
-import Transaction from './../transaction/transaction';
+import { Transaction } from './../transaction/transaction';
 import { UnspentTxOut } from '../../types/transaction';
 
 

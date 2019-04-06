@@ -1,5 +1,5 @@
 import { TxIn, TxOut, UnspentTxOut } from './../types/transaction';
-import Transaction from '../blockchain/transaction/transaction';
+import { Transaction } from '../blockchain/transaction/transaction';
 import { ec as EC } from 'elliptic';
 
 

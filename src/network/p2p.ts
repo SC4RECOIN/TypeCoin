@@ -75,8 +75,7 @@ class p2pServer {
       // latest block mined
       if (message.type == MessageType.NEW_BLOCK) {
         const blockData = JSON.parse(message.data);
-        let receivedBlock = new Block(blockData.timestamp, blockData.transactions, blockData.previousHash, blockData.index, blockData.nonce);
-        if (!this.chain.addBlock(receivedBlock)) {
+        if (!this.chain.addBlock(blockData)) {
           console.log('Block received invalid');
         }
       }

@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser')
 import Blockchain from '../blockchain/blockchain';
-import Transaction from '../blockchain/transaction/transaction';
+import { Transaction } from '../blockchain/transaction/transaction';
 import Block from '../blockchain/block/block';
 import Wallet from '../wallet/wallet';
 import p2pServer from './p2p';

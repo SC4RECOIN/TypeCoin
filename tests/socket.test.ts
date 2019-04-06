@@ -3,7 +3,6 @@ import initHttpServer from '../src/network/node';
 import p2pServer from '../src/network/p2p';
 import Wallet from '../src/wallet/wallet';
 import fetch from 'node-fetch';
-import { ec as EC } from 'elliptic';
 import { expect, assert } from 'chai';
 import 'mocha';
 

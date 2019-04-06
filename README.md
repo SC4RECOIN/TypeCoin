@@ -1,7 +1,6 @@
 # TypeCoin
 
 [![Build Status](https://travis-ci.com/SC4RECOIN/TypeCoin.svg?token=d3A7dM8RkmrqdA4Ky1Zy&branch=master)](https://travis-ci.com/SC4RECOIN/TypeCoin)
-[![Coverage Status](https://coveralls.io/repos/github/SC4RECOIN/TypeCoin/badge.svg?branch=master)](https://coveralls.io/github/SC4RECOIN/TypeCoin?branch=master)
 
 A cryptocurrency written in typescript
 

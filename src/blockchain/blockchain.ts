@@ -1,6 +1,6 @@
 import Block from './block/block';
 import TransactionPool from './transaction/txpool';
-import Transaction from './transaction/transaction';
+import { Transaction, isTxValid } from './transaction/transaction';
 import { UnspentTxOut } from './../types/transaction';
 
 
@@ -42,9 +42,9 @@ class Blockchain {
   }
 
   addBlock(newBlock: Block): boolean {
-    // newBlock.transactions.forEach((tx) => {
-    //   if (!tx.isValid(this.uTxOuts)) return false;
-    // })
+    newBlock.transactions.forEach((tx) => {
+      if (!isTxValid(tx, this.uTxOuts)) return false;
+    })
 
     this.chain.push(newBlock);
     this.updateUnspentTxOs(newBlock.transactions)
