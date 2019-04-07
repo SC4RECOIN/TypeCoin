@@ -8,7 +8,8 @@ A cryptocurrency written in typescript
 
 - [x] Merkletree
 - [x] Websocket
-- [ ] POS
+- [X] POS
+- [ ] Consensus on the difficulty
 - [x] Unit tests
 - [x] TravisCI integration
 - [x] Wallet

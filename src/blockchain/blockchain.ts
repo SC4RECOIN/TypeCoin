@@ -11,17 +11,21 @@ class Blockchain {
   difficulty: number;
   pendingTransactions: TransactionPool;
   miningReward: number;
+  zeroStakeCnt: number;
 
   constructor(blocks?: Block[]) {
     this.chain = blocks || [this.createGenesisBlock()];
-    this.difficulty = 2;
+    this.difficulty = 1;
     this.pendingTransactions = new TransactionPool();
     this.miningReward = 100;
     this.uTxOuts = [];
+
+    // this is the number of block that can be mined by addresses with zero stake
+    this.zeroStakeCnt = 100;
   }
 
   createGenesisBlock(): Block {
-    return new Block(Date.parse('2017-01-01'), [], '0', 1);
+    return new Block([], '0', 1, null, null);
   }
 
   getLatestBlock(): Block {
@@ -90,8 +94,8 @@ class Blockchain {
     const rewardTx = Transaction.createCoinbaseTx(miningRewardAddress, this.chain.length, this.miningReward)
     this.pendingTransactions.addTransaction(rewardTx, this.uTxOuts);
 
-    let block = new Block(Date.now(), this.pendingTransactions.pool, this.getLatestBlock().hash, this.chain.length + 1);
-    block.mineBlock(this.difficulty);
+    let block = new Block(this.pendingTransactions.pool, this.getLatestBlock().hash, this.chain.length + 1, this.getBalanceOfAddress(miningRewardAddress), miningRewardAddress);
+    block.mineBlock(this.difficulty, this.zeroStakeCnt > this.chain.length);
     this.chain.push(block);
 
     // find new outputs
