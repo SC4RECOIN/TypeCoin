@@ -12,6 +12,8 @@ class Blockchain {
   pendingTransactions: TransactionPool;
   miningReward: number;
   zeroStakeCnt: number;
+  blockGenerationInv: number;
+  diffAdjustmentInv: number;
 
   constructor(blocks?: Block[]) {
     this.chain = blocks || [this.createGenesisBlock()];
@@ -22,6 +24,12 @@ class Blockchain {
 
     // this is the number of block that can be mined by addresses with zero stake
     this.zeroStakeCnt = 100;
+
+    // intervals in seconds
+    this.blockGenerationInv = 15
+
+    // interval in blocks
+    this.diffAdjustmentInv = 10
   }
 
   createGenesisBlock(): Block {
@@ -51,7 +59,13 @@ class Blockchain {
     })
 
     this.chain.push(newBlock);
-    this.updateUnspentTxOs(newBlock.transactions)
+    this.updateUnspentTxOs(newBlock.transactions);
+
+    // difficulty adjustment
+    if (this.chain.length % this.diffAdjustmentInv === 0) {
+      this.adjustDifficulty();
+    }
+
     return true;
   }
 
@@ -96,7 +110,7 @@ class Blockchain {
 
     let block = new Block(this.pendingTransactions.pool, this.getLatestBlock().hash, this.chain.length + 1, this.getBalanceOfAddress(miningRewardAddress), miningRewardAddress);
     block.mineBlock(this.difficulty, this.zeroStakeCnt > this.chain.length);
-    this.chain.push(block);
+    this.addBlock(block);
 
     // find new outputs
     this.updateUnspentTxOs(this.pendingTransactions.pool);
@@ -119,6 +133,21 @@ class Blockchain {
     return addressUTxO
       .map((uTxO: UnspentTxOut) => uTxO.amount)
       .reduce((a,b) => a + b, 0);
+  }
+
+  adjustDifficulty() {
+    // find difference between expected and actual block generation time
+    const prevAdjustmentBlock: Block = this.chain[this.chain.length - this.diffAdjustmentInv];
+    const timeTaken = this.chain[this.chain.length - 1].timestamp - prevAdjustmentBlock.timestamp;
+    const timeExpected = this.blockGenerationInv * this.diffAdjustmentInv;
+    
+    if (timeTaken < timeExpected / 2) {
+      this.difficulty++;
+      console.log(`Increasing the difficulty to ${this.difficulty}`)
+    } else if (timeTaken > timeExpected * 2) {
+      this.difficulty--;
+      console.log(`Decreasing the difficulty to ${this.difficulty}`)
+    } 
   }
 
   isChainValid(): boolean {

@@ -25,7 +25,6 @@ class Block {
     this.transactions = transactions;
     this.minterBalance = minterBalance;
     this.minterAddress = minterAddress;
-    this.hash = this.calculateHash();
     
     // need block transactions to construct
     this.merkleRoot = null;
