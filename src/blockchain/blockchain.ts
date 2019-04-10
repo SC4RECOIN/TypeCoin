@@ -112,9 +112,6 @@ class Blockchain {
     block.mineBlock(this.difficulty, this.zeroStakeCnt > this.chain.length);
     this.addBlock(block);
 
-    // find new outputs
-    this.updateUnspentTxOs(this.pendingTransactions.pool);
-
     this.pendingTransactions.clearTxPool();
     return block;
   }
