@@ -50,7 +50,7 @@ describe('Chain Tests', function() {
     });
 
     it('Valid chain', function() {
-        let result = typeCoin.isChainValid();
-        expect(result).equal(true);
-      });
+      let result = typeCoin.isChainValid();
+      expect(result).equal(true);
+    });
   });

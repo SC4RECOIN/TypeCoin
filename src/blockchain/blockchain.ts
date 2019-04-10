@@ -33,7 +33,9 @@ class Blockchain {
   }
 
   createGenesisBlock(): Block {
-    return new Block([], '0', 1, null, null);
+    const gen = new Block([], '0', 1, null, null);
+    gen.hash = gen.calculateHash();
+    return gen;
   }
 
   getLatestBlock(): Block {
