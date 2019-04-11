@@ -1,4 +1,5 @@
 const SHA256 = require('crypto-js/sha256');
+const BigNumber = require('bignumber.js');
 import MerkleTree from './merkletree';
 import { Transaction } from './../transaction/transaction';
 import { UnspentTxOut } from '../../types/transaction';
@@ -15,13 +16,15 @@ class Block {
   nonce: number;
   hash: string;
 
-  constructor(timestamp: number, transactions: Transaction[], previousHash: string = '', index: number=0, nonce: number=0) {
+  minterBalance: number; 
+  minterAddress: string;
+
+  constructor(transactions: Transaction[], previousHash: string = '', index: number=0, minterBalance: number, minterAddress: string) {
     this.previousHash = previousHash;
-    this.timestamp = timestamp;
     this.index = index;
     this.transactions = transactions;
-    this.nonce = nonce;
-    this.hash = this.calculateHash();
+    this.minterBalance = minterBalance;
+    this.minterAddress = minterAddress;
     
     // need block transactions to construct
     this.merkleRoot = null;
@@ -29,7 +32,8 @@ class Block {
   }
 
   calculateHash(): string {
-    return SHA256(this.previousHash + this.timestamp + JSON.stringify(this.transactions) + this.nonce).toString();
+    const txs = JSON.stringify(this.transactions);
+    return SHA256(this.index + this.previousHash + this.timestamp + txs + this.minterBalance + this.minterAddress).toString();
   }
 
   calculateMerkleRoot() {
@@ -44,13 +48,33 @@ class Block {
     return this.merkleTree.verify(proof, leaf, this.merkleRoot)
   }
 
-  mineBlock(difficulty: number) {
-    while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join('0')) {
-      this.nonce++;
-      this.hash = this.calculateHash();
+  mineBlock(difficulty: number, allowZeroBalanceMinting: boolean=false) {
+    let pastTimestamp: number = 0;
+    while (true) {
+      // check every second
+      this.timestamp = Math.round(new Date().getTime() / 1000);
+      if(pastTimestamp !== this.timestamp) {
+        if (this.isBlockStakingValid(difficulty, allowZeroBalanceMinting)) {
+          this.hash = this.calculateHash();
+          this.calculateMerkleRoot();
+          return;
+        }
+        pastTimestamp = this.timestamp;
+      }
     }
-    this.calculateMerkleRoot();
   }
+
+  isBlockStakingValid(difficulty: number, allowZeroBalanceMinting: boolean): boolean {
+    // allow minting without coins for a few blocks
+    if (this.minterBalance === 0 && allowZeroBalanceMinting) {
+      this.minterBalance = 1;
+    }
+
+    // SHA256(prevhash + address + timestamp) <= 2^256 * balance / diff
+    const stakingPower = new BigNumber(2).exponentiatedBy(256).times(this.minterBalance).dividedBy(difficulty);
+    const stakingHash: string = SHA256(this.previousHash + this.minterAddress + this.timestamp);
+    return stakingPower.minus(new BigNumber(stakingHash, 16)).toNumber() >= 0;
+  };
 
   hasValidTransactions(uTxOuts: UnspentTxOut[]): boolean {
     for (const tx of this.transactions) {

@@ -11,17 +11,31 @@ class Blockchain {
   difficulty: number;
   pendingTransactions: TransactionPool;
   miningReward: number;
+  zeroStakeCnt: number;
+  blockGenerationInv: number;
+  diffAdjustmentInv: number;
 
   constructor(blocks?: Block[]) {
     this.chain = blocks || [this.createGenesisBlock()];
-    this.difficulty = 2;
+    this.difficulty = 1;
     this.pendingTransactions = new TransactionPool();
     this.miningReward = 100;
     this.uTxOuts = [];
+
+    // this is the number of block that can be mined by addresses with zero stake
+    this.zeroStakeCnt = 100;
+
+    // intervals in seconds
+    this.blockGenerationInv = 15
+
+    // interval in blocks
+    this.diffAdjustmentInv = 10
   }
 
   createGenesisBlock(): Block {
-    return new Block(Date.parse('2017-01-01'), [], '0', 1);
+    const gen = new Block([], '0', 1, null, null);
+    gen.hash = gen.calculateHash();
+    return gen;
   }
 
   getLatestBlock(): Block {
@@ -47,7 +61,13 @@ class Blockchain {
     })
 
     this.chain.push(newBlock);
-    this.updateUnspentTxOs(newBlock.transactions)
+    this.updateUnspentTxOs(newBlock.transactions);
+
+    // difficulty adjustment
+    if (this.chain.length % this.diffAdjustmentInv === 0) {
+      this.adjustDifficulty();
+    }
+
     return true;
   }
 
@@ -90,12 +110,9 @@ class Blockchain {
     const rewardTx = Transaction.createCoinbaseTx(miningRewardAddress, this.chain.length, this.miningReward)
     this.pendingTransactions.addTransaction(rewardTx, this.uTxOuts);
 
-    let block = new Block(Date.now(), this.pendingTransactions.pool, this.getLatestBlock().hash, this.chain.length + 1);
-    block.mineBlock(this.difficulty);
-    this.chain.push(block);
-
-    // find new outputs
-    this.updateUnspentTxOs(this.pendingTransactions.pool);
+    let block = new Block(this.pendingTransactions.pool, this.getLatestBlock().hash, this.chain.length + 1, this.getBalanceOfAddress(miningRewardAddress), miningRewardAddress);
+    block.mineBlock(this.difficulty, this.zeroStakeCnt > this.chain.length);
+    this.addBlock(block);
 
     this.pendingTransactions.clearTxPool();
     return block;
@@ -115,6 +132,21 @@ class Blockchain {
     return addressUTxO
       .map((uTxO: UnspentTxOut) => uTxO.amount)
       .reduce((a,b) => a + b, 0);
+  }
+
+  adjustDifficulty() {
+    // find difference between expected and actual block generation time
+    const prevAdjustmentBlock: Block = this.chain[this.chain.length - this.diffAdjustmentInv];
+    const timeTaken = this.chain[this.chain.length - 1].timestamp - prevAdjustmentBlock.timestamp;
+    const timeExpected = this.blockGenerationInv * this.diffAdjustmentInv;
+    
+    if (timeTaken < timeExpected / 2) {
+      this.difficulty++;
+      console.log(`Increasing the difficulty to ${this.difficulty}`)
+    } else if (timeTaken > timeExpected * 2) {
+      this.difficulty--;
+      console.log(`Decreasing the difficulty to ${this.difficulty}`)
+    } 
   }
 
   isChainValid(): boolean {

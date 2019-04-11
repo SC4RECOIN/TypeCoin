@@ -1,11 +1,6 @@
 const reverse = require('buffer-reverse');
 const CryptoJS = require('crypto-js');
-
-
-interface Proof {
-  position: string,
-  data: Buffer[]
-}
+import { Proof } from './../../types/merkleproof';
 
 class MerkleTree {
 
