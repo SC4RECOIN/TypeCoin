@@ -3,9 +3,10 @@ import 'antd/dist/antd.css';
 import '../index.css'
 import { Layout, Menu, Input, Modal } from 'antd';
 import NodeContent from './nodes'
-import Transaction from './transaction'
+import Wallet from './wallet'
 import Addresses from './addresses'
 import Mine from './mine'
+import { ec as EC } from 'elliptic';
 
 class App extends React.Component {
   constructor(props) {
@@ -14,18 +15,21 @@ class App extends React.Component {
     this.state = {
       activeHeader: this.defaultPage,
       modalVisable: true,
-      url: ''
+      modalTitle: 'Setup/import wallet',
+      keyPair: null
     };
+
     this.setActivePage = this.setActivePage.bind(this);
-    this.getPageContent = this.getPageContent.bind(this);
-    this.setNodeURL = this.setNodeURL.bind(this);
+    this.setKeyPair = this.setKeyPair.bind(this);
   }
 
-  setNodeURL(e) {
+  setKeyPair(e) {
+    const ec = new EC('secp256k1');
+    const keyPair = ec.keyFromPrivate(e.target.value);
+
     this.setState({
       modalVisable: false,
-      url: 'https://localhost:44395/api/v1/'
-      // url: e.target.value
+      keyPair: keyPair
     });
   }
 
@@ -33,21 +37,24 @@ class App extends React.Component {
     this.setState({activeHeader: activePage})
   }
 
-  getPageContent() {
-    switch(this.state.activeHeader) {
-      case 0:
-        return <NodeContent nodeUrl={this.state.url}/>
-      case 1:
-        return <Transaction nodeUrl={this.state.url}/>
-      case 2:
-        return <Addresses nodeUrl={this.state.url}/>
-      case 3:
-        return <Mine nodeUrl={this.state.url}/>
-    }
-  }
-
   render() {
     const { Header, Footer } = Layout;
+
+    let pageContent;
+    switch(this.state.activeHeader) {
+      case 0:
+        pageContent = <NodeContent nodeUrl={this.state.url}/>
+        break;
+      case 1:
+        pageContent = <Wallet nodeUrl={this.state.url}/>
+        break;
+      case 2:
+        pageContent = <Addresses nodeUrl={this.state.url}/>
+        break;
+      case 3:
+        pageContent = <Mine nodeUrl={this.state.url}/>
+        break;
+    }
 
     return (
       <div>
@@ -61,26 +68,26 @@ class App extends React.Component {
               style={{ lineHeight: '64px' }}
             >
               <Menu.Item key='0' onClick={() => this.setActivePage(0)}>Nodes</Menu.Item>
-              <Menu.Item key='1' onClick={() => this.setActivePage(1)}>Transaction</Menu.Item>
+              <Menu.Item key='1' onClick={() => this.setActivePage(1)}>Wallet</Menu.Item>
               <Menu.Item key='2' onClick={() => this.setActivePage(2)}>Addresses</Menu.Item>
               <Menu.Item key='3' onClick={() => this.setActivePage(3)}>Mine</Menu.Item>
             </Menu>
           </Header>
-          {this.getPageContent()}
+          {pageContent}
           <Footer style={{textAlign: 'center'}}>
             Created by Kurtis Streutker
           </Footer>
         </Layout>
         <Modal
-          title='Not connected to node'
+          title={this.state.modelTitle}
           visible={this.state.modalVisable}
           footer={null}
         >
-          <p>Enter blockchain node URL:</p>
+          <p>Enter private key:</p>
           <Input
-            placeholder='Node URL'
+            placeholder='Private key'
             onChange={this.updateTo}
-            onPressEnter={this.setNodeURL}
+            onPressEnter={this.setKeyPair}
           />
         </Modal>
       </div>

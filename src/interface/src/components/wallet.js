@@ -1,30 +1,23 @@
 import React from 'react';
 import { Layout, Menu, Card, Input, Button } from 'antd';
 
-class Transaction extends React.Component {
+class Wallet extends React.Component {
   state = {
     message: '',
     toAddress: '',
     fromAddress: '',
     key: '',
-    amount: ''
+    amount: '',
+    activePanel: 0
+  }
+
+  setActivePanel(activePanel) {
+    this.setState({activePanel: activePanel})
   }
 
   updateTo = e => {
     this.setState({
       toAddress: e.target.value,
-    })
-  }
-
-  updateFrom = e => {
-    this.setState({
-      fromAddress: e.target.value,
-    })
-  }
-
-  updateKey = e => {
-    this.setState({
-      key: e.target.value,
     })
   }
 
@@ -36,12 +29,8 @@ class Transaction extends React.Component {
 
   sendTransaction = () => {
     let message;
-    if (this.state.fromAddress === '') {
-      message = 'From address cannot be empty'
-    } else if (this.state.toAddress === '') {
+    if (this.state.toAddress === '') {
       message = 'To address cannot be empty'
-    } else if (this.state.key === '') {
-      message = 'Key field cannot be empty'
     } else if (this.state.amount === '') {
       message = 'Amount not set'
     } else {
@@ -70,6 +59,35 @@ class Transaction extends React.Component {
   render() {
     const { Content, Sider } = Layout;
 
+    let panel;
+    switch(this.state.activePanel) {
+      case 1:
+        panel = (
+          <Card title='New Transaction' style={{marginTop: 10}}>
+            <Input
+              placeholder='From'
+              onChange={this.updateFrom}
+              style={{marginBottom: 20}}
+            />
+            <Input
+              placeholder='Amount'
+              onChange={this.updateAmount}
+              style={{marginBottom: 20}}/>
+            <Button
+              onClick={this.sendTransaction}
+              style={{marginBottom: 15}}
+            >
+              Send
+            </ Button>
+            <p>Message: {this.state.message}</p>
+          </Card>
+        );
+        break;
+      default:
+        panel = "Not implemented";
+        break;
+    }
+
     return(
       <Content style={{ padding: '0 50px' }}>
         <Layout className='content-page'>
@@ -79,38 +97,13 @@ class Transaction extends React.Component {
               defaultSelectedKeys={['0']}
               style={{ height: '100%' }}
             >
-              <Menu.Item key='0'>Create</Menu.Item>
+              <Menu.Item key='0' onClick={() => this.setActivePanel(0)}>Wallet Balance</Menu.Item>
+              <Menu.Item key='1' onClick={() => this.setActivePanel(1)}>New Transaction</Menu.Item>
+              <Menu.Item key='2' onClick={() => this.setActivePanel(2)}>Transaction History</Menu.Item>
             </Menu>
           </Sider>
           <Content className='content'>
-            <Card title='New Transaction' style={{marginTop: 10}}>
-              <Input
-                placeholder='From'
-                onChange={this.updateFrom}
-                style={{marginBottom: 20}}
-              />
-              <Input
-                placeholder='To'
-                onChange={this.updateTo}
-                style={{marginBottom: 20}}
-              />
-              <Input
-                placeholder='Private key'
-                onChange={this.updateKey}
-                style={{marginBottom: 20}}
-              />
-              <Input
-                placeholder='Amount'
-                onChange={this.updateAmount}
-                style={{marginBottom: 20}}/>
-              <Button
-                onClick={this.sendTransaction}
-                style={{marginBottom: 15}}
-              >
-                Send
-              </ Button>
-              <p>Message: {this.state.message}</p>
-            </Card>
+            {panel}
           </Content>
         </Layout>
       </Content>
@@ -118,4 +111,4 @@ class Transaction extends React.Component {
   }
 }
 
-export default Transaction;
+export default Wallet;
