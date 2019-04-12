@@ -5,6 +5,7 @@
   "scripts": {
     "setup": "npm install",
     "build": "tsc",
+    "interface": "tsc && node built/main.js && npm start --prefix src/interface",
     "test": "mocha -r ts-node/register tests/**/*.test.ts"
   },
   "author": "Kurtis Streutker",
