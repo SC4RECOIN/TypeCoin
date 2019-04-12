@@ -1,4 +1,4 @@
-import { TxIn, TxOut, UnspentTxOut } from './../types/transaction';
+import { TxIn, TxOut, UnspentTxOut, TxRecord } from './../types/transaction';
 import { Transaction } from '../blockchain/transaction/transaction';
 import { ec as EC } from 'elliptic';
 
@@ -8,6 +8,7 @@ class Wallet {
   address: string;
   uTxOuts: UnspentTxOut[];
   balance: number;
+  txHistory: TxRecord[];
 
   constructor() {
     const ec = new EC('secp256k1');
@@ -15,6 +16,7 @@ class Wallet {
     this.address = this.keyPair.getPublic('hex');
     this.uTxOuts = [];
     this.balance = 0;
+    this.txHistory = [];
   }
 
   updateUTxOuts(uTxOuts: UnspentTxOut[]) {
@@ -78,6 +80,14 @@ class Wallet {
       })
       return true;
     });
+
+    // update tx history
+    this.txHistory.push({
+      to: toAddress, 
+      from: this.address, 
+      amount: amount, 
+      date: new Date().toLocaleString()
+    })
 
     return tx;
   };

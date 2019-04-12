@@ -18,4 +18,11 @@ interface UnspentTxOut {
   amount: number;
 }
 
-export { TxIn, TxOut, UnspentTxOut }
+interface TxRecord {
+  from: string,
+  to: string,
+  amount: number,
+  date: string
+}
+
+export { TxIn, TxOut, UnspentTxOut, TxRecord }
