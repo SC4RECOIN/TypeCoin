@@ -55,6 +55,10 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer, wal
         }));
     });
 
+    app.post('/my-balance', (req, res) => {
+        res.send(JSON.stringify({balance: chain.getBalanceOfAddress(wallet.address)}, null, 2));
+    });
+
     app.post('/balance', (req, res) => {
         res.send(JSON.stringify({balance: chain.getBalanceOfAddress(req.body.address)}, null, 2));
     });

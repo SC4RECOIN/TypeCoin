@@ -5,14 +5,18 @@ class Wallet extends React.Component {
   state = {
     message: '',
     toAddress: '',
-    fromAddress: '',
-    key: '',
     amount: '',
+    walletBalance: -1,
     activePanel: 0
   }
 
   setActivePanel(activePanel) {
     this.setState({activePanel: activePanel})
+  }
+
+  balancePanel() {
+    this.sendBalanceRequest();
+    this.setState({activePanel: 0})
   }
 
   updateTo = e => {
@@ -25,6 +29,15 @@ class Wallet extends React.Component {
     this.setState({
       amount: e.target.value,
     })
+  }
+
+  sendBalanceRequest() {
+    fetch(window.env.NODE_URL + '/my-balance', {
+      method: 'POST',
+      headers:{'Content-Type': 'application/json'}
+    }).then(res => res.json())
+      .then(response => this.setState({walletBalance: response.balance}))
+      .catch(error => console.error('Error getting address balance:', error));
   }
 
   sendTransaction = () => {
@@ -42,18 +55,20 @@ class Wallet extends React.Component {
     })
 
     const input = {
-      "FromAddress": this.state.fromAddress,
       "ToAddress": this.state.toAddress,
-      "PrivateKey":this.state.key,
       "Amount": this.state.amount
     };
 
-    fetch(this.props.nodeUrl + 'transactions/new', {
+    fetch(window.env.NODE_URL + '/transactions/new', {
       method: 'POST',
       body: JSON.stringify(input),
       headers:{'Content-Type': 'application/json'}
     }).then(response => this.setState({message: 'Transaction successfully added'}))
-    .catch(error => console.error('Error sending transaction:', error));
+      .catch(error => console.error('Error sending transaction:', error));
+  }
+
+  componentDidMount() {
+    this.sendBalanceRequest();
   }
 
   render() {
@@ -61,6 +76,11 @@ class Wallet extends React.Component {
 
     let panel;
     switch(this.state.activePanel) {
+      case 0:
+        panel = (
+          <h1 style={{margin: 20, fontSize: 60}}>{this.state.walletBalance + " TC 💸"}</h1>
+        )
+        break;
       case 1:
         panel = (
           <Card title='New Transaction' style={{marginTop: 10}}>
@@ -97,7 +117,7 @@ class Wallet extends React.Component {
               defaultSelectedKeys={['0']}
               style={{ height: '100%' }}
             >
-              <Menu.Item key='0' onClick={() => this.setActivePanel(0)}>Wallet Balance</Menu.Item>
+              <Menu.Item key='0' onClick={() => this.balancePanel()}>Wallet Balance</Menu.Item>
               <Menu.Item key='1' onClick={() => this.setActivePanel(1)}>New Transaction</Menu.Item>
               <Menu.Item key='2' onClick={() => this.setActivePanel(2)}>Transaction History</Menu.Item>
             </Menu>
