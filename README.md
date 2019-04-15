@@ -8,10 +8,14 @@ A POS cryptocurrency written in Typescript
 
 Install dependencies  
 ```npm setup```  
+  
 Run p2p node and http API  
 ```npm blockchain```  
-Run blockchain with react interface  
+  
+Run blockchain with simple react interface. Check wallet balance and send transactions.  
 ```npm all```  
+  
 ![alt text](docs/interface.png)  
+  
 Run unit tests  
 ```npm test```  
