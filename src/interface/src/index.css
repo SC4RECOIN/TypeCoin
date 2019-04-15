@@ -3,10 +3,11 @@ body {
 }
 
 .logo {
-  width: 120px;
+  width: 6em;
   height: 31px;
-  background: rgba(255,255,255,.2);
-  margin: 16px 24px 16px 0;
+  color: white;
+  font-size: 40px;
+  margin: 16px 24px 16px 0 auto;
   float: left;
 }
 

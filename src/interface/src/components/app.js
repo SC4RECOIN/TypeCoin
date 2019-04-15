@@ -29,7 +29,7 @@ class App extends React.Component {
       <div>
         <Layout>
           <Header className='header'>
-            <div className='logo'/>
+            <div className='logo'>TYPECOIN</div>
             <Menu
               theme='dark'
               mode='horizontal'
