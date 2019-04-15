@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const bodyParser = require('body-parser')
 import Blockchain from '../blockchain/blockchain';
 import { Transaction } from '../blockchain/transaction/transaction';
@@ -11,6 +12,7 @@ import { MessageType } from '../types/message'
 const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer, wallet: Wallet) => {
     const app = express();
     app.use(bodyParser.json());
+    app.use(cors());
 
     app.get('/', (req, res) => res.send('Node is running'))
 
