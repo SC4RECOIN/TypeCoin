@@ -14,17 +14,15 @@ class Mine extends React.Component {
       loading: true,
     })
 
-    const input = {RewardAddress:  '0x8AbC81fa694D6FBd14E7df3d9e39e0951fD0a206'};
-    fetch(this.props.nodeUrl + 'mine', {
+    fetch(window.env.NODE_URL + '/mine', {
       method: 'POST',
-      body: JSON.stringify(input),
       headers:{'Content-Type': 'application/json'}
     }).then(res => res.json())
-    .then(response => this.setState({
-      blockMined: JSON.stringify(response.blockData, null, 2),
-      loading: false
-    }))
-    .catch(error => console.error('Error mining block', error));
+      .then(response => this.setState({
+        blockMined: response.message,
+        loading: false
+      }))
+      .catch(error => console.error('Error mining block', error));
   }
 
   render() {

@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "setup": "npm install",
+    "setup": "npm install && npm install --prefix src/interface",
     "build": "tsc",
-    "interface:": "npm start --prefix src/interface",
-    "blockchain": "node built/main.js",
+    "interface:": "tsc && npm start --prefix src/interface",
+    "blockchain": "tsc && node built/main.js",
     "all": "tsc && npm-run-all --parallel blockchain interface",
     "test": "mocha -r ts-node/register tests/**/*.test.ts"
   },

@@ -50,6 +50,10 @@ class Wallet extends React.Component {
   }
 
   sendTransaction = () => {
+    this.setState({
+      message: ""
+    })
+
     let message;
     if (this.state.toAddress === '') {
       message = 'To address cannot be empty';
@@ -57,15 +61,16 @@ class Wallet extends React.Component {
       message = 'Amount not set';
     } else {
       const input = {
-        'ToAddress': this.state.toAddress,
-        'Amount': this.state.amount
+        'toAddress': this.state.toAddress,
+        'amount': this.state.amount
       };
   
-      fetch(window.env.NODE_URL + '/transactions/new', {
+      fetch(window.env.NODE_URL + '/transaction', {
         method: 'POST',
         body: JSON.stringify(input),
         headers:{'Content-Type': 'application/json'}
-      }).then(response => this.setState({message: 'Transaction successfully added'}))
+      }).then(res => res.json())
+        .then(response => this.setState({message: response.message}))
         .catch(error => console.error('Error sending transaction:', error));
       
       message = 'Transaction sent';
@@ -78,23 +83,37 @@ class Wallet extends React.Component {
 
   componentDidMount() {
     this.sendBalanceRequest();
+    this.sendTxHistoryRequest();
   }
 
   render() {
     const { Content, Sider } = Layout;
+
+    let txJsx = [];
+    this.state.txHistory.reverse().forEach((tx, idx) => {
+      txJsx.push(
+        <Card key={idx.toString()} style={{marginTop: 20}}>
+          <p>To: {tx.to}</p>
+          <p>From: {tx.from}</p>
+          <p>Amount: {tx.amount}</p>
+          <p>Date: {tx.date}</p>
+        </Card>
+      )
+    })
 
     const panel = [
       (
         <div>
           <h1 style={{margin: 30, fontSize: 60}}>{this.state.walletBalance + " TC 💸"}</h1>
           <hr style={{width: "90%"}}/>
+          {txJsx}
         </div>
       ),
       (
         <Card title='New Transaction' style={{marginTop: 10}}>
           <Input
-            placeholder='From'
-            onChange={this.updateFrom}
+            placeholder='To'
+            onChange={this.updateTo}
             style={{marginBottom: 20}}
           />
           <Input

@@ -43,7 +43,7 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer, wal
     });
 
     app.post('/mine', (req, res) => {
-        const newBlock: Block = chain.minePendingTransactions(req.body.rewardAddress);
+        const newBlock: Block = chain.minePendingTransactions(wallet.address);
 
         // send chain to peers
         p2p.broadcast({
@@ -58,7 +58,7 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer, wal
     });
 
     app.post('/my-balance', (req, res) => {
-        res.send(JSON.stringify({balance: chain.getBalanceOfAddress(wallet.address)}, null, 2));
+        res.send(JSON.stringify({balance: chain.getBalanceOfAddress(wallet.address)}));
     });
 
     app.get('/my-wallet-history', (req, res) => {
@@ -66,7 +66,7 @@ const initHttpServer = (httpPort: number, chain: Blockchain, p2p: p2pServer, wal
     });
 
     app.post('/balance', (req, res) => {
-        res.send(JSON.stringify({balance: chain.getBalanceOfAddress(req.body.address)}, null, 2));
+        res.send(JSON.stringify({balance: chain.getBalanceOfAddress(req.body.address)}));
     });
 
     app.get('/peers', (req, res) => {

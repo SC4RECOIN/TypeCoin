@@ -8,14 +8,14 @@ class Addresses extends Component {
   };
 
   setAddressValues = e => {
-    const input = {Address:  e.target.value};
-    fetch(this.props.nodeUrl + 'balance', {
+    const input = {address:  e.target.value};
+    fetch(window.env.NODE_URL + '/balance', {
       method: 'POST',
       body: JSON.stringify(input),
       headers:{'Content-Type': 'application/json'}
     }).then(res => res.json())
-    .then(response => this.setAddressBalance(response.balance))
-    .catch(error => console.error('Error retrieving balance:', error));
+      .then(response => this.setAddressBalance(response.balance))
+      .catch(error => console.error('Error retrieving balance:', error));
 
     this.setState({
       address: e.target.value,
